@@ -299,6 +299,7 @@ export const INITIAL_SETTINGS: CafeSettings = {
   facebookUrl: 'https://facebook.com/kullekopi',
   whatsappNumber: '+6281234567890',
   themeColor: '#0F52BA',
+  faviconUrl: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=32&h=32&q=80', // Default coffee cup icon
   aboutPill: 'WARISAN AUTENTIK',
   aboutTitle: 'Menciptakan Momen Indah di Kulle Kopi',
   aboutDescription: 'Didirikan di atas nilai ketepatan rasa, kehangatan pelayanan, dan kualitas terbaik, Kulle Kopi memadukan biji kopi Arabika pilihan dengan menu kuliner lezat yang menonjolkan kekayaan lokal dan kenyamanan modern. Di sini, kopi bukan sekadar minuman, melainkan sebuah cerita rasa yang diracik khusus untuk menginspirasi Anda.',

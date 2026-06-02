@@ -91,6 +91,19 @@ export default function App() {
     localStorage.setItem('kulle_dark_mode', String(isDarkMode));
   }, [isDarkMode]);
 
+  // Synchronize favicon dynamically
+  useEffect(() => {
+    if (settings.faviconUrl) {
+      let link: HTMLLinkElement | null = document.querySelector("link[rel*='icon']");
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'shortcut icon';
+        document.getElementsByTagName('head')[0].appendChild(link);
+      }
+      link.href = settings.faviconUrl;
+    }
+  }, [settings.faviconUrl]);
+
   // Synchronize state helpers to local storage
   const handleUpdateMenu = (updated: MenuItem[]) => {
     setMenuItems(updated);

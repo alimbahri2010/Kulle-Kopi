@@ -128,6 +128,7 @@ export default function AdminDashboard({
   const [settingsPhone, setSettingsPhone] = useState(settings.contactPhone);
   const [settingsEmail, setSettingsEmail] = useState(settings.contactEmail);
   const [settingsWA, setSettingsWA] = useState(settings.whatsappNumber);
+  const [settingsFavicon, setSettingsFavicon] = useState(settings.faviconUrl || '');
   const [settingsSavedSuccess, setSettingsSavedSuccess] = useState(false);
 
   // Tentang Kulle states
@@ -372,6 +373,7 @@ export default function AdminDashboard({
       contactPhone: settingsPhone,
       contactEmail: settingsEmail,
       whatsappNumber: settingsWA,
+      faviconUrl: settingsFavicon,
       themeColor: '#0F52BA'
     });
     setSettingsSavedSuccess(true);
@@ -1631,6 +1633,85 @@ export default function AdminDashboard({
                       onChange={(e) => setSettingsHours(e.target.value)}
                       className={`w-full p-2.5 text-xs rounded-lg border outline-none ${isDarkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-850'}`}
                     />
+                  </div>
+                </div>
+
+                <div className="p-5 rounded-2xl border border-slate-800/60 dark:border-slate-800 bg-slate-900/10 space-y-4">
+                  <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+                    <div>
+                      <h4 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-slate-200">Ikon Favicon Website</h4>
+                      <p className="text-[11px] text-slate-400 mt-0.5">Atur logo kecil yang muncul di tab browser Anda dan penanda situs.</p>
+                    </div>
+
+                    <div className="w-full md:w-auto">
+                      <p className="text-[9px] font-mono uppercase text-slate-500 mb-1 text-left">Simulasi Tab Browser:</p>
+                      <div className="px-3 py-1.5 bg-slate-950 rounded-xl border border-slate-800/80 flex items-center gap-2 max-w-xs shadow-inner">
+                        <div className="flex gap-1 flex-shrink-0">
+                          <div className="w-1.5 h-1.5 rounded-full bg-red-500/70"></div>
+                          <div className="w-1.5 h-1.5 rounded-full bg-yellow-500/70"></div>
+                          <div className="w-1.5 h-1.5 rounded-full bg-green-500/70"></div>
+                        </div>
+                        <div className="flex items-center gap-1 bg-[#1a2333]/90 rounded px-2 py-0.5 max-w-[140px] border border-slate-800">
+                          {settingsFavicon ? (
+                            <img src={settingsFavicon} className="w-3 h-3 rounded-sm object-cover" alt="Favicon" />
+                          ) : (
+                            <div className="w-3 h-3 rounded-sm bg-[#0F52BA]/20 animate-pulse"></div>
+                          )}
+                          <span className="text-[8px] font-semibold text-slate-350 truncate">{settingsBrand || 'KULLE KOPI'}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-mono uppercase tracking-wider text-slate-450">URL Ikon Favicon</label>
+                      <input
+                        type="text"
+                        value={settingsFavicon}
+                        onChange={(e) => setSettingsFavicon(e.target.value)}
+                        placeholder="https://example.com/logo.png atau Data URL"
+                        className={`w-full p-2.5 text-xs rounded-lg border outline-none ${isDarkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-850'}`}
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-mono uppercase tracking-wider text-slate-450">Unggah File Ikon (.png, .jpg, .ico)</label>
+                      <div className="flex items-center gap-2">
+                        <label className={`flex-grow flex items-center justify-center border border-dashed rounded-lg p-2 text-[11px] font-medium cursor-pointer transition-all ${isDarkMode ? 'bg-slate-900 border-slate-700 hover:border-blue-500 text-slate-350 hover:text-white' : 'bg-white border-slate-200 hover:border-blue-500 text-slate-600'}`}>
+                          <span>📂 Pilih Gambar/Ikon</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              if (file.size > 1 * 1024 * 1024) {
+                                alert("Ukuran gambar ikon (favicon) tidak boleh melebihi 1MB.");
+                                return;
+                              }
+                              const reader = new FileReader();
+                              reader.onloadend = () => {
+                                if (typeof reader.result === 'string') {
+                                  setSettingsFavicon(reader.result);
+                                }
+                              };
+                              reader.readAsDataURL(file);
+                            }}
+                          />
+                        </label>
+                        {settingsFavicon && (
+                          <button
+                            type="button"
+                            onClick={() => setSettingsFavicon('')}
+                            className="px-3 py-2 text-xs bg-red-500/10 hover:bg-red-500/20 text-red-500 dark:text-red-400 rounded-lg border border-red-500/20 transition-all font-semibold"
+                          >
+                            Hapus
+                          </button>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
 

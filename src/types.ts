@@ -103,6 +103,7 @@ export interface CafeSettings {
   facebookUrl: string;
   whatsappNumber: string;
   themeColor: string;
+  faviconUrl?: string;
   aboutPill?: string;
   aboutTitle?: string;
   aboutDescription?: string;
