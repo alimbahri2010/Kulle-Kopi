@@ -1,0 +1,6 @@
+{
+  "name": "Kulle Kopi Café",
+  "description": "Premium modern cafe experience and admin dashboard for Kulle Kopi, complete with order management, menu filters, and analytics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
