@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { MenuItem, Order, Customer, InventoryItem, Employee, Promotion, CafeSettings, OrderItem, GalleryItem } from './types';
+import { MenuItem, Order, Customer, InventoryItem, Employee, Promotion, CafeSettings, OrderItem, GalleryItem, Review } from './types';
 import { 
   INITIAL_MENU_ITEMS, 
   INITIAL_ORDERS, 
@@ -35,6 +35,7 @@ export default function App() {
   const [promotions, setPromotions] = useState<Promotion[]>([]);
   const [settings, setSettings] = useState<CafeSettings>(INITIAL_SETTINGS);
   const [galleryPhotos, setGalleryPhotos] = useState<GalleryItem[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
 
   // Load state from local storage on bootstrap
   useEffect(() => {
@@ -67,6 +68,9 @@ export default function App() {
 
       const storedGallery = localStorage.getItem('kulle_gallery_photos');
       setGalleryPhotos(storedGallery ? JSON.parse(storedGallery) : INITIAL_GALLERY_PHOTOS);
+
+      const storedReviews = localStorage.getItem('kulle_reviews');
+      setReviews(storedReviews ? JSON.parse(storedReviews) : INITIAL_REVIEWS);
     } catch (e) {
       console.error('Error loading data from storage:', e);
       // Fallback to static
@@ -78,6 +82,7 @@ export default function App() {
       setPromotions(INITIAL_PROMOTIONS);
       setSettings(INITIAL_SETTINGS);
       setGalleryPhotos(INITIAL_GALLERY_PHOTOS);
+      setReviews(INITIAL_REVIEWS);
     }
   }, []);
 
@@ -138,6 +143,11 @@ export default function App() {
   const handleUpdateGallery = (updated: GalleryItem[]) => {
     setGalleryPhotos(updated);
     localStorage.setItem('kulle_gallery_photos', JSON.stringify(updated));
+  };
+
+  const handleUpdateReviews = (updated: Review[]) => {
+    setReviews(updated);
+    localStorage.setItem('kulle_reviews', JSON.stringify(updated));
   };
 
   // Live order checkout pipeline simulation (online ordering integration)
@@ -233,7 +243,7 @@ export default function App() {
           promotions={promotions}
           settings={settings}
           galleryPhotos={galleryPhotos}
-          reviews={INITIAL_REVIEWS}
+          reviews={reviews}
           onPlaceOrder={handlePlaceOrder}
           isDarkMode={isDarkMode}
           toggleDarkMode={toggleDarkMode}
@@ -249,6 +259,7 @@ export default function App() {
           promotions={promotions}
           settings={settings}
           galleryPhotos={galleryPhotos}
+          reviews={reviews}
           onUpdateMenu={handleUpdateMenu}
           onUpdateOrders={handleUpdateOrders}
           onUpdateInventory={handleUpdateInventory}
@@ -256,6 +267,7 @@ export default function App() {
           onUpdatePromotions={handleUpdatePromotions}
           onUpdateSettings={handleUpdateSettings}
           onUpdateGallery={handleUpdateGallery}
+          onUpdateReviews={handleUpdateReviews}
           isDarkMode={isDarkMode}
           toggleDarkMode={toggleDarkMode}
           setView={setView}

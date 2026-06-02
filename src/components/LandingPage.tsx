@@ -114,14 +114,20 @@ export default function LandingPage({
   const [isWhatsAppOpen, setIsWhatsAppOpen] = useState(false);
   const [whatsappMsg, setWhatsappMsg] = useState('Halo, saya ingin bertanya tentang reservasi atau menu di Kulle Kopi!');
 
-  // Handle auto-rotation for reviews
+  // Handle auto-rotation for reviews & bounds check
   useEffect(() => {
-    if (reviews.length === 0) return;
+    if (reviews.length === 0) {
+      if (currentReviewIdx !== 0) setCurrentReviewIdx(0);
+      return;
+    }
+    if (currentReviewIdx >= reviews.length) {
+      setCurrentReviewIdx(reviews.length - 1);
+    }
     const interval = setInterval(() => {
       setCurrentReviewIdx((prev) => (prev + 1) % reviews.length);
     }, 6000);
     return () => clearInterval(interval);
-  }, [reviews.length]);
+  }, [reviews.length, currentReviewIdx]);
 
   // Handle scroll detection for blur navbar
   useEffect(() => {

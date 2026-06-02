@@ -10,9 +10,9 @@ import {
   Search, Bell, User, LayoutDashboard, UtensilsCrossed, PackageOpen, 
   HelpCircle, LogOut, Check, X, ShieldAlert, Plus, Eye, Printer, 
   Tag, Compass, Sparkles, Filter, ToggleLeft, Edit, Trash2, CheckCircle2,
-  DollarSign, RefreshCcw, Landmark, Upload, Image, Info
+  DollarSign, RefreshCcw, Landmark, Upload, Image, Info, MessageSquare, Star
  } from 'lucide-react';
-import { MenuItem, Order, Customer, InventoryItem, Employee, Promotion, CafeSettings, OrderStatus, Category, GalleryItem } from '../types';
+import { MenuItem, Order, Customer, InventoryItem, Employee, Promotion, CafeSettings, OrderStatus, Category, GalleryItem, Review } from '../types';
 // @ts-ignore
 import logoImg from '../assets/images/regenerated_image_1780051135628.png';
 
@@ -25,6 +25,7 @@ interface AdminDashboardProps {
   promotions: Promotion[];
   settings: CafeSettings;
   galleryPhotos: GalleryItem[];
+  reviews: Review[];
   onUpdateMenu: (updated: MenuItem[]) => void;
   onUpdateOrders: (updated: Order[]) => void;
   onUpdateInventory: (updated: InventoryItem[]) => void;
@@ -32,6 +33,7 @@ interface AdminDashboardProps {
   onUpdatePromotions: (updated: Promotion[]) => void;
   onUpdateSettings: (settings: CafeSettings) => void;
   onUpdateGallery: (updated: GalleryItem[]) => void;
+  onUpdateReviews: (updated: Review[]) => void;
   isDarkMode: boolean;
   toggleDarkMode: () => void;
   setView: (view: 'customer' | 'admin') => void;
@@ -46,6 +48,7 @@ export default function AdminDashboard({
   promotions,
   settings,
   galleryPhotos,
+  reviews,
   onUpdateMenu,
   onUpdateOrders,
   onUpdateInventory,
@@ -53,6 +56,7 @@ export default function AdminDashboard({
   onUpdatePromotions,
   onUpdateSettings,
   onUpdateGallery,
+  onUpdateReviews,
   isDarkMode,
   toggleDarkMode,
   setView
@@ -148,6 +152,15 @@ export default function AdminDashboard({
   const [galleryFormCategory, setGalleryFormCategory] = useState('interior');
   const [galleryFormImage, setGalleryFormImage] = useState('');
   const [isDraggingGalleryImage, setIsDraggingGalleryImage] = useState(false);
+
+  // Reviews Modification States
+  const [reviewFormOpen, setReviewFormOpen] = useState(false);
+  const [editingReview, setEditingReview] = useState<Review | null>(null);
+  const [reviewFormName, setReviewFormName] = useState('');
+  const [reviewFormComment, setReviewFormComment] = useState('');
+  const [reviewFormRating, setReviewFormRating] = useState(5);
+  const [reviewFormDate, setReviewFormDate] = useState('');
+  const [reviewFormAvatar, setReviewFormAvatar] = useState('');
 
   // Authentication validation
   const handleAuthSubmit = (e: React.FormEvent) => {
@@ -463,6 +476,79 @@ export default function AdminDashboard({
     reader.readAsDataURL(file);
   };
 
+  // --- REVIEWS MODIFICATION LOGIC ---
+  const handleOpenAddReview = () => {
+    setEditingReview(null);
+    setReviewFormName('');
+    setReviewFormComment('');
+    setReviewFormRating(5);
+    setReviewFormDate(new Date().toISOString().split('T')[0]);
+    setReviewFormAvatar('https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80');
+    setReviewFormOpen(true);
+  };
+
+  const handleOpenEditReview = (item: Review) => {
+    setEditingReview(item);
+    setReviewFormName(item.name);
+    setReviewFormComment(item.comment);
+    setReviewFormRating(item.rating);
+    setReviewFormDate(item.date);
+    setReviewFormAvatar(item.avatar);
+    setReviewFormOpen(true);
+  };
+
+  const handleSaveReview = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reviewFormName || !reviewFormComment) {
+      alert("Silakan isi nama dan komentar ulasan terlebih dahulu.");
+      return;
+    }
+
+    if (editingReview) {
+      // Edit
+      const updatedList = reviews.map((r) => 
+        r.id === editingReview.id 
+          ? { ...r, name: reviewFormName, comment: reviewFormComment, rating: Number(reviewFormRating), date: reviewFormDate, avatar: reviewFormAvatar } 
+          : r
+      );
+      onUpdateReviews(updatedList);
+    } else {
+      // Create
+      const newItem: Review = {
+        id: 'rev_' + Date.now(),
+        name: reviewFormName,
+        comment: reviewFormComment,
+        rating: Number(reviewFormRating),
+        date: reviewFormDate || new Date().toISOString().split('T')[0],
+        avatar: reviewFormAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'
+      };
+      onUpdateReviews([newItem, ...reviews]);
+    }
+    setReviewFormOpen(false);
+  };
+
+  const handleDeleteReview = (id: string) => {
+    if (confirm("Apakah Anda yakin ingin menghapus ulasan ini?")) {
+      const updatedList = reviews.filter(r => r.id !== id);
+      onUpdateReviews(updatedList);
+    }
+  };
+
+  const handleReviewAvatarUploadChange = (file: File) => {
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      alert("Ukuran gambar avatar tidak boleh melebihi 2MB.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      if (typeof reader.result === 'string') {
+        setReviewFormAvatar(reader.result);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
   // --- METRIC STATISTICS CALCULATORS ---
   const totalCompletedOrders = orders.filter(o => o.status === 'completed');
   const totalSalesVal = totalCompletedOrders.reduce((acc, current) => acc + current.total, 0);
@@ -641,6 +727,7 @@ export default function AdminDashboard({
       case 'promotions': return 'Kode Promo & Diskon';
       case 'gallery': return 'Galeri Foto Cafe';
       case 'about_kulle': return 'Tentang Kulle';
+      case 'reviews': return 'Ulasan & Review';
       case 'settings': return 'Pengaturan Utama';
       default: return tabId.toUpperCase();
     }
@@ -696,6 +783,7 @@ export default function AdminDashboard({
               { id: 'promotions', label: 'Kode Promo & Diskon', icon: <Tag className="w-4.5 h-4.5" /> },
               { id: 'gallery', label: 'Edit Galeri', icon: <Image className="w-4.5 h-4.5" /> },
               { id: 'about_kulle', label: 'Tentang Kulle', icon: <Info className="w-4.5 h-4.5" /> },
+              { id: 'reviews', label: 'Kelola Ulasan', icon: <MessageSquare className="w-4.5 h-4.5" /> },
               { id: 'settings', label: 'Pengaturan Utama', icon: <Settings className="w-4.5 h-4.5" /> }
             ].map((tab) => (
               <button
@@ -1544,6 +1632,143 @@ export default function AdminDashboard({
           )}
 
           {/* ==============================================
+              VIEW 8.8: MANAGE CUSTOMER REVIEWS
+              ============================================== */}
+          {activeSidebarTab === 'reviews' && (
+            <div className="space-y-6">
+              
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div>
+                  <h3 className="text-xl font-extrabold tracking-tight text-[#0F52BA] dark:text-cyan-400">Kelola Ulasan & Klien Kulle</h3>
+                  <p className="text-xs text-slate-400">Tambah, ubah, atau hapus ulasan loyal pelanggan yang tampil di bagian testimoni landing page.</p>
+                </div>
+
+                <button
+                  id="add-review-btn"
+                  onClick={handleOpenAddReview}
+                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#0F52BA] to-blue-500 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow"
+                >
+                  <Plus className="w-4.5 h-4.5" /> TAMBAH ULASAN BARU
+                </button>
+              </div>
+
+              {/* Total Summary Stats for Reviews */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className={`p-4 rounded-2xl border ${isDarkMode ? 'bg-[#0a142c] border-slate-800' : 'bg-white border-slate-100'} flex items-center gap-4`}>
+                  <div className="p-3 rounded-xl bg-blue-500/10 text-[#0F52BA] dark:text-cyan-400">
+                    <MessageSquare className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase font-mono tracking-wider text-slate-400">Total Ulasan</p>
+                    <p className="text-lg font-black">{reviews.length} Ulasan</p>
+                  </div>
+                </div>
+
+                <div className={`p-4 rounded-2xl border ${isDarkMode ? 'bg-[#0a142c] border-slate-800' : 'bg-white border-slate-100'} flex items-center gap-4`}>
+                  <div className="p-3 rounded-xl bg-amber-500/10 text-amber-500">
+                    <Star className="w-5 h-5 fill-amber-500" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase font-mono tracking-wider text-slate-400">Rata-rata Rating</p>
+                    <p className="text-lg font-black">
+                      {reviews.length > 0 
+                        ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1) 
+                        : '0.0'} / 5.0
+                    </p>
+                  </div>
+                </div>
+
+                <div className={`p-4 rounded-2xl border ${isDarkMode ? 'bg-[#0a142c] border-slate-800' : 'bg-white border-slate-100'} flex items-center gap-4`}>
+                  <div className="p-3 rounded-xl bg-emerald-500/10 text-emerald-500">
+                    <CheckCircle2 className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase font-mono tracking-wider text-slate-400">Diterbitkan Aktif</p>
+                    <p className="text-lg font-black">Aktif Semua</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Testimonial List Board */}
+              <div className="space-y-4">
+                {reviews.length === 0 ? (
+                  <div className="p-12 text-center rounded-2xl border border-dashed border-slate-800 bg-slate-900/10 animate-fade-in">
+                    <MessageSquare className="w-12 h-12 text-slate-500 mx-auto mb-3" />
+                    <p className="text-sm font-bold text-slate-400">Belum Ada Ulasan Terdaftar</p>
+                    <p className="text-xs text-slate-500 mt-1">Ulasan baru yang ditambahkan di sini akan langsung tampil pada Landing Page.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {reviews.map((rev) => (
+                      <div 
+                        key={rev.id} 
+                        className={`p-5 rounded-2xl border flex flex-col justify-between gap-4 transition-all hover:shadow-md ${isDarkMode ? 'bg-[#0a142c] border-slate-800 hover:border-slate-700' : 'bg-white border-slate-100 hover:border-slate-200'}`}
+                      >
+                        <div className="space-y-3">
+                          {/* Top Author Row */}
+                          <div className="flex items-center gap-3">
+                            <img 
+                              src={rev.avatar} 
+                              alt={rev.name} 
+                              className="w-10 h-10 rounded-full object-cover border border-slate-700/35 bg-slate-900 shadow-sm" 
+                              referrerPolicy="no-referrer"
+                            />
+                            <div>
+                              <h4 className="text-xs font-bold font-sans">{rev.name}</h4>
+                              <p className="text-[10px] font-mono text-slate-500">{rev.date || 'Tanggal tidak diset'}</p>
+                            </div>
+                            
+                            {/* Stars rating align right */}
+                            <div className="ml-auto flex items-center gap-0.5">
+                              {Array.from({ length: 5 }).map((_, i) => (
+                                <Star 
+                                  key={i} 
+                                  className={`w-3.5 h-3.5 ${i < rev.rating ? 'fill-amber-400 stroke-amber-400' : 'text-slate-705 text-slate-700'}`} 
+                                />
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Comment block */}
+                          <p className={`text-xs leading-relaxed italic ${isDarkMode ? 'text-slate-350 text-slate-300' : 'text-slate-600'}`}>
+                            "{rev.comment}"
+                          </p>
+                        </div>
+
+                        {/* Card bottom actions row */}
+                        <div className="flex items-center justify-between pt-3 border-t border-slate-850/40 dark:border-slate-800">
+                          <span className="text-[9px] font-mono text-emerald-500 font-bold uppercase tracking-widest bg-emerald-500/10 px-2 py-0.5 rounded">
+                            Verified Reviewer
+                          </span>
+
+                          <div className="flex gap-2">
+                            <button
+                              id={`edit-review-btn-${rev.id}`}
+                              onClick={() => handleOpenEditReview(rev)}
+                              className="p-1.5 rounded-lg bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 text-xs flex items-center gap-1 font-semibold transition-all cursor-pointer"
+                              title="Ubah Ulasan"
+                            >
+                              <Edit className="w-3.5 h-3.5" /> Ubah
+                            </button>
+                            <button
+                              id={`delete-review-btn-${rev.id}`}
+                              onClick={() => handleDeleteReview(rev.id)}
+                              className="p-1.5 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20 text-xs flex items-center gap-1 font-semibold transition-all cursor-pointer"
+                              title="Hapus Ulasan"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" /> Hapus
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ==============================================
               VIEW 9: CORE SETTINGS (UPDATE CAFE DATA)
               ============================================== */}
           {activeSidebarTab === 'settings' && (
@@ -1637,27 +1862,50 @@ export default function AdminDashboard({
                 </div>
 
                 <div className="p-5 rounded-2xl border border-slate-800/60 dark:border-slate-800 bg-slate-900/10 space-y-4">
-                  <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+                  <div className="flex flex-col md:flex-row gap-6 items-start md:items-center justify-between">
                     <div>
                       <h4 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-slate-200">Ikon Favicon Website</h4>
                       <p className="text-[11px] text-slate-400 mt-0.5">Atur logo kecil yang muncul di tab browser Anda dan penanda situs.</p>
                     </div>
 
-                    <div className="w-full md:w-auto">
-                      <p className="text-[9px] font-mono uppercase text-slate-500 mb-1 text-left">Simulasi Tab Browser:</p>
-                      <div className="px-3 py-1.5 bg-slate-950 rounded-xl border border-slate-800/80 flex items-center gap-2 max-w-xs shadow-inner">
-                        <div className="flex gap-1 flex-shrink-0">
-                          <div className="w-1.5 h-1.5 rounded-full bg-red-500/70"></div>
-                          <div className="w-1.5 h-1.5 rounded-full bg-yellow-500/70"></div>
-                          <div className="w-1.5 h-1.5 rounded-full bg-green-500/70"></div>
-                        </div>
-                        <div className="flex items-center gap-1 bg-[#1a2333]/90 rounded px-2 py-0.5 max-w-[140px] border border-slate-800">
-                          {settingsFavicon ? (
-                            <img src={settingsFavicon} className="w-3 h-3 rounded-sm object-cover" alt="Favicon" />
-                          ) : (
-                            <div className="w-3 h-3 rounded-sm bg-[#0F52BA]/20 animate-pulse"></div>
-                          )}
-                          <span className="text-[8px] font-semibold text-slate-350 truncate">{settingsBrand || 'KULLE KOPI'}</span>
+                    <div className="w-full md:w-auto flex flex-wrap items-center gap-4">
+                      {/* High-Resolution Zoomed Favicon Detail */}
+                      <div className="flex flex-col items-center justify-center p-3 rounded-xl bg-slate-950/40 border border-slate-800/60 dark:bg-slate-950/80">
+                        {settingsFavicon ? (
+                          <div className="relative group">
+                            <img src={settingsFavicon} className="w-14 h-14 rounded-lg object-cover shadow-md border border-slate-700/30 bg-slate-900" alt="Favicon Zoom" />
+                            <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 px-1.5 py-0.5 text-[8px] font-mono font-bold bg-blue-600 text-white rounded whitespace-nowrap">64x64 PX</span>
+                          </div>
+                        ) : (
+                          <div className="w-14 h-14 rounded-lg bg-[#0F52BA]/10 border border-dashed border-[#0F52BA]/30 flex items-center justify-center text-slate-500 text-[10px] font-medium">
+                            Kosong
+                          </div>
+                        )}
+                        <span className="text-[9px] font-semibold text-slate-400 mt-2">Detail Ikon</span>
+                      </div>
+
+                      {/* Larger Simulator Tab Display */}
+                      <div className="flex-grow">
+                        <p className="text-[10px] font-mono uppercase text-slate-500 mb-1.5 text-left">Simulasi Tab Browser:</p>
+                        <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 flex flex-col gap-2.5 w-full md:w-80 shadow-md">
+                          {/* Browser Window Window Bar */}
+                          <div className="flex items-center gap-1.5 pb-1 border-b border-slate-900">
+                            <div className="w-2 h-2 rounded-full bg-red-500/80"></div>
+                            <div className="w-2 h-2 rounded-full bg-yellow-500/80"></div>
+                            <div className="w-2 h-2 rounded-full bg-green-500/80"></div>
+                          </div>
+                          {/* Realistic Simulated Tab */}
+                          <div className="flex items-center gap-2 bg-[#1e293b]/75 border border-slate-800 rounded-lg px-3 py-2 max-w-[210px]">
+                            {settingsFavicon ? (
+                              <img src={settingsFavicon} className="w-5 h-5 rounded object-cover shadow-sm bg-slate-900" alt="Favicon" />
+                            ) : (
+                              <div className="w-5 h-5 rounded bg-[#0F52BA]/20 animate-pulse"></div>
+                            )}
+                            <span className="text-[11px] font-bold text-slate-200 truncate pr-1">
+                              {settingsBrand || 'Kulle Kopi'}
+                            </span>
+                            <span className="text-[9px] text-slate-500 hover:text-slate-400 font-bold ml-auto cursor-pointer">×</span>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -2295,6 +2543,99 @@ export default function AdminDashboard({
                 <button type="submit" className="w-full py-2 bg-[#0F52BA] text-white font-bold rounded uppercase">
                   Luncurkan Kampanye Kupon
                 </button>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* MODAL 7: ADD / EDIT REVIEWS SPECIFICS */}
+      <AnimatePresence>
+        {reviewFormOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.5 }} exit={{ opacity: 0 }} onClick={() => setReviewFormOpen(false)} className="absolute inset-0 bg-[#0A1F44]/50 backdrop-blur-sm" />
+            <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} className={`relative max-w-sm w-full rounded-2xl border p-6 space-y-4 ${isDarkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-205 text-slate-800'}`}>
+              <div className="flex justify-between items-center pb-2 border-b border-inherit">
+                <h4 className="font-bold text-sm uppercase font-mono">{editingReview ? 'Ubah Ulasan Pelanggan' : 'Tambah Ulasan Pelanggan'}</h4>
+                <button onClick={() => setReviewFormOpen(false)} className="text-slate-400 hover:text-red-500 font-bold">✕</button>
+              </div>
+
+              <form onSubmit={handleSaveReview} className="space-y-4 text-xs">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-mono uppercase text-slate-400">Nama Pelanggan</label>
+                  <input required type="text" value={reviewFormName} onChange={(e) => setReviewFormName(e.target.value)} className={`w-full p-2.5 rounded-xl border outline-none ${isDarkMode ? 'bg-slate-950 border-slate-800 text-white focus:border-cyan-400' : 'bg-slate-50 border-slate-200 text-slate-800 focus:border-[#0F52BA]'}`} placeholder="Contoh: Rian Pratama" />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-mono uppercase text-slate-400">Rating Bintang (1 - 5)</label>
+                  <select value={reviewFormRating} onChange={(e) => setReviewFormRating(Number(e.target.value))} className={`w-full p-2.5 rounded-xl border outline-none ${isDarkMode ? 'bg-slate-950 border-slate-800 text-white focus:border-cyan-400' : 'bg-slate-50 border-slate-200 text-slate-800 focus:border-[#0F52BA]'}`}>
+                    <option value="5">⭐⭐⭐⭐⭐ 5 Bintang</option>
+                    <option value="4">⭐⭐⭐⭐ 4 Bintang</option>
+                    <option value="3">⭐⭐⭐ 3 Bintang</option>
+                    <option value="2">⭐⭐ 2 Bintang</option>
+                    <option value="1">⭐ 1 Bintang</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-mono uppercase text-slate-400">Isi Komentar / Testimoni</label>
+                  <textarea required rows={3} value={reviewFormComment} onChange={(e) => setReviewFormComment(e.target.value)} className={`w-full p-2.5 rounded-xl border outline-none ${isDarkMode ? 'bg-slate-950 border-slate-800 text-white focus:border-cyan-400' : 'bg-slate-50 border-slate-200 text-slate-800 focus:border-[#0F52BA]'}`} placeholder="Tulis masukan, kesan atau ulasan pelanggan terhadap Kulle Kopi..." />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-mono uppercase text-slate-400">Tanggal Ulasan</label>
+                  <input type="date" value={reviewFormDate} onChange={(e) => setReviewFormDate(e.target.value)} className={`w-full p-2.5 rounded-xl border outline-none ${isDarkMode ? 'bg-slate-950 border-slate-800 text-white focus:border-cyan-400' : 'bg-slate-50 border-slate-200 text-slate-800 focus:border-[#0F52BA]'}`} />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-mono uppercase text-slate-400">Foto Profil / Avatar</label>
+                  <div className="flex items-center gap-3">
+                    <img src={reviewFormAvatar} alt="Avatar Preview" className="w-10 h-10 rounded-full object-cover border border-slate-700 bg-slate-950" />
+                    <div className="flex-1 flex flex-col gap-1">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        id="reviewAvatarFileInput"
+                        onChange={(e) => {
+                          if (e.target.files && e.target.files[0]) {
+                            handleReviewAvatarUploadChange(e.target.files[0]);
+                          }
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => document.getElementById('reviewAvatarFileInput')?.click()}
+                        className="px-3 py-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-500 text-[10px] font-bold uppercase tracking-wider text-left w-fit transition-all cursor-pointer"
+                      >
+                        Unggah Foto
+                      </button>
+                    </div>
+                  </div>
+                  <input
+                    type="text"
+                    value={reviewFormAvatar}
+                    onChange={(e) => setReviewFormAvatar(e.target.value)}
+                    placeholder="Atau masukkan tautan URL foto..."
+                    className={`w-full p-2.5 mt-1 rounded-xl border text-[10px] outline-none ${isDarkMode ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-600 focus:border-cyan-400' : 'bg-slate-50 border-slate-200 placeholder-slate-400 focus:border-[#0F52BA]'}`}
+                  />
+                </div>
+
+                <div className="pt-2 flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setReviewFormOpen(false)}
+                    className={`flex-1 py-3 rounded-xl font-bold transition-all text-center cursor-pointer ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
+                  >
+                    BATAL
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 py-3 bg-gradient-to-r from-[#0F52BA] to-blue-500 font-bold text-white rounded-xl shadow shadow-blue-500/25 cursor-pointer"
+                  >
+                    SIMPAN
+                  </button>
+                </div>
               </form>
             </motion.div>
           </div>
