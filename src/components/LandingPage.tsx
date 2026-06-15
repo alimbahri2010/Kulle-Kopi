@@ -69,16 +69,24 @@ export default function LandingPage({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
+  // Dynamic Hero images from settings or fallback to defaults
+  const activeHeroImages = [
+    settings?.heroImageUrl1 || 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=1920&q=80',
+    settings?.heroImageUrl2 || 'https://images.unsplash.com/photo-1498804103079-a6351b050096?auto=format&fit=crop&w=1920&q=80',
+    settings?.heroImageUrl3 || 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=1920&q=80',
+    settings?.heroImageUrl4 || 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=1920&q=80'
+  ];
+
   // Hero Carousel State
   const [currentHeroIdx, setCurrentHeroIdx] = useState(0);
 
   // Auto rotate hero images every 5 seconds
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentHeroIdx((prev) => (prev + 1) % HERO_IMAGES.length);
+      setCurrentHeroIdx((prev) => (prev + 1) % activeHeroImages.length);
     }, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [activeHeroImages.length]);
   
   // Menu Filtering States
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -375,7 +383,7 @@ export default function LandingPage({
       <section id="home" className="relative min-h-[92vh] flex items-center justify-center overflow-hidden">
         {/* Background Overlay Screen */}
         <div className="absolute inset-0 z-0">
-          {HERO_IMAGES.map((imgUrl, idx) => (
+          {activeHeroImages.map((imgUrl, idx) => (
             <img 
               key={idx}
               src={imgUrl} 
@@ -389,14 +397,14 @@ export default function LandingPage({
 
         {/* Carousel Prev & Next Controls */}
         <button
-          onClick={() => setCurrentHeroIdx((prev) => (prev - 1 + HERO_IMAGES.length) % HERO_IMAGES.length)}
+          onClick={() => setCurrentHeroIdx((prev) => (prev - 1 + activeHeroImages.length) % activeHeroImages.length)}
           className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 z-20 p-2 sm:p-3 rounded-full bg-black/30 dark:bg-slate-900/40 text-white/70 hover:text-white hover:bg-black/60 dark:hover:bg-[#0F52BA]/60 transition-all border border-white/10"
           aria-label="Previous slide"
         >
           <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
         </button>
         <button
-          onClick={() => setCurrentHeroIdx((prev) => (prev + 1) % HERO_IMAGES.length)}
+          onClick={() => setCurrentHeroIdx((prev) => (prev + 1) % activeHeroImages.length)}
           className="absolute right-4 sm:right-6 top-1/2 -translate-y-1/2 z-20 p-2 sm:p-3 rounded-full bg-black/30 dark:bg-slate-900/40 text-white/70 hover:text-white hover:bg-black/60 dark:hover:bg-[#0F52BA]/60 transition-all border border-white/10"
           aria-label="Next slide"
         >
@@ -405,7 +413,7 @@ export default function LandingPage({
 
         {/* Carousel Dots Indicators */}
         <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
-          {HERO_IMAGES.map((_, idx) => (
+          {activeHeroImages.map((_, idx) => (
             <button
               key={idx}
               onClick={() => setCurrentHeroIdx(idx)}
@@ -1403,7 +1411,7 @@ export default function LandingPage({
 
       {/* 13. FOOTER AREA */}
       <footer id="footer" className="bg-[#0A1F44] text-slate-300 pt-16 pb-12 border-t border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-12 text-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-3 gap-12 text-sm">
           {/* Brand profile */}
           <div className="space-y-4">
             <div className="h-12 flex items-center bg-transparent">
@@ -1453,26 +1461,6 @@ export default function LandingPage({
             <p className="text-xs text-slate-400 leading-relaxed font-mono">
               Jam Buka: {settings.openingHours}
             </p>
-          </div>
-
-          {/* Newsletter subscription */}
-          <div className="space-y-4">
-            <h4 className="text-white font-bold text-xs uppercase tracking-widest text-cyan-400">Buletin Kulle Club</h4>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Daftar untuk mendapatkan undangan khusus ke pelatihan seduh kopi bulanan dan kedatangan biji kopi premium baru.
-            </p>
-            
-            <form onSubmit={(e) => { e.preventDefault(); alert('Terima kasih telah berlangganan! Periksa email Anda untuk mendapatkan kode diskon.'); }} className="flex gap-2">
-              <input
-                required
-                type="email"
-                placeholder="email@domain.com"
-                className="bg-white/5 border border-white/10 rounded-lg p-2 text-xs text-white placeholder-slate-500 outline-none w-full"
-              />
-              <button type="submit" className="px-3 bg-gradient-to-tr from-[#0F52BA] to-blue-500 hover:brightness-110 text-white rounded-lg text-xs font-bold font-mono">
-                SUB
-              </button>
-            </form>
           </div>
         </div>
 

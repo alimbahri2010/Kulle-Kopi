@@ -111,6 +111,10 @@ export interface CafeSettings {
   aboutFeature1Desc?: string;
   aboutFeature2Title?: string;
   aboutFeature2Desc?: string;
+  heroImageUrl1?: string;
+  heroImageUrl2?: string;
+  heroImageUrl3?: string;
+  heroImageUrl4?: string;
 }
 
 export interface GalleryItem {
