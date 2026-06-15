@@ -69,16 +69,24 @@ export default function LandingPage({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
+  // Dynamic Hero images from settings or fallback to defaults
+  const activeHeroImages = [
+    settings?.heroImageUrl1 || 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=1920&q=80',
+    settings?.heroImageUrl2 || 'https://images.unsplash.com/photo-1498804103079-a6351b050096?auto=format&fit=crop&w=1920&q=80',
+    settings?.heroImageUrl3 || 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=1920&q=80',
+    settings?.heroImageUrl4 || 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=1920&q=80'
+  ];
+
   // Hero Carousel State
   const [currentHeroIdx, setCurrentHeroIdx] = useState(0);
 
   // Auto rotate hero images every 5 seconds
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentHeroIdx((prev) => (prev + 1) % HERO_IMAGES.length);
+      setCurrentHeroIdx((prev) => (prev + 1) % activeHeroImages.length);
     }, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [activeHeroImages.length]);
   
   // Menu Filtering States
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -375,7 +383,7 @@ export default function LandingPage({
       <section id="home" className="relative min-h-[92vh] flex items-center justify-center overflow-hidden">
         {/* Background Overlay Screen */}
         <div className="absolute inset-0 z-0">
-          {HERO_IMAGES.map((imgUrl, idx) => (
+          {activeHeroImages.map((imgUrl, idx) => (
             <img 
               key={idx}
               src={imgUrl} 
@@ -389,14 +397,14 @@ export default function LandingPage({
 
         {/* Carousel Prev & Next Controls */}
         <button
-          onClick={() => setCurrentHeroIdx((prev) => (prev - 1 + HERO_IMAGES.length) % HERO_IMAGES.length)}
+          onClick={() => setCurrentHeroIdx((prev) => (prev - 1 + activeHeroImages.length) % activeHeroImages.length)}
           className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 z-20 p-2 sm:p-3 rounded-full bg-black/30 dark:bg-slate-900/40 text-white/70 hover:text-white hover:bg-black/60 dark:hover:bg-[#0F52BA]/60 transition-all border border-white/10"
           aria-label="Previous slide"
         >
           <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
         </button>
         <button
-          onClick={() => setCurrentHeroIdx((prev) => (prev + 1) % HERO_IMAGES.length)}
+          onClick={() => setCurrentHeroIdx((prev) => (prev + 1) % activeHeroImages.length)}
           className="absolute right-4 sm:right-6 top-1/2 -translate-y-1/2 z-20 p-2 sm:p-3 rounded-full bg-black/30 dark:bg-slate-900/40 text-white/70 hover:text-white hover:bg-black/60 dark:hover:bg-[#0F52BA]/60 transition-all border border-white/10"
           aria-label="Next slide"
         >
@@ -405,7 +413,7 @@ export default function LandingPage({
 
         {/* Carousel Dots Indicators */}
         <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
-          {HERO_IMAGES.map((_, idx) => (
+          {activeHeroImages.map((_, idx) => (
             <button
               key={idx}
               onClick={() => setCurrentHeroIdx(idx)}
