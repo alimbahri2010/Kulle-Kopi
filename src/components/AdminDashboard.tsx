@@ -672,13 +672,6 @@ export default function AdminDashboard({
                 <p className="text-xs text-slate-400">Secure Access Gateway • Authorized Personnel Only</p>
               </div>
 
-              {/* Quick tip box */}
-              <div className="p-3 bg-[#0F52BA]/10 border border-[#0F52BA]/20 rounded-xl text-[11px] text-[#0F52BA] dark:text-cyan-400 space-y-1">
-                <p className="font-bold">🔑 System Presets For Demonstrations:</p>
-                <p>Username: <span className="font-mono underline">admin</span></p>
-                <p>Password: <span className="font-mono underline">admin123</span></p>
-              </div>
-
               <div className="space-y-3">
                 <div className="space-y-1">
                   <label className="text-[10px] font-mono uppercase tracking-widest text-slate-400">System Role Selector</label>
