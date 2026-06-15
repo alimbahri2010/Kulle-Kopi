@@ -672,6 +672,13 @@ export default function AdminDashboard({
                 <p className="text-xs text-slate-400">Secure Access Gateway • Authorized Personnel Only</p>
               </div>
 
+              {/* Quick tip box */}
+              <div className="p-3 bg-[#0F52BA]/10 border border-[#0F52BA]/20 rounded-xl text-[11px] text-[#0F52BA] dark:text-cyan-400 space-y-1">
+                <p className="font-bold">🔑 System Presets For Demonstrations:</p>
+                <p>Username: <span className="font-mono underline">admin</span></p>
+                <p>Password: <span className="font-mono underline">admin123</span></p>
+              </div>
+
               <div className="space-y-3">
                 <div className="space-y-1">
                   <label className="text-[10px] font-mono uppercase tracking-widest text-slate-400">System Role Selector</label>
@@ -1930,12 +1937,23 @@ export default function AdminDashboard({
                     </div>
                   </div>
 
-                  <div className="pt-2 max-w-sm">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-mono uppercase tracking-wider text-slate-450">URL Ikon Favicon</label>
+                      <input
+                        type="text"
+                        value={settingsFavicon}
+                        onChange={(e) => setSettingsFavicon(e.target.value)}
+                        placeholder="https://example.com/logo.png atau Data URL"
+                        className={`w-full p-2.5 text-xs rounded-lg border outline-none ${isDarkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-850'}`}
+                      />
+                    </div>
+
                     <div className="space-y-1">
                       <label className="text-[10px] font-mono uppercase tracking-wider text-slate-450">Unggah File Ikon (.png, .jpg, .ico)</label>
                       <div className="flex items-center gap-2">
-                        <label className={`flex-grow flex items-center justify-center border border-dashed rounded-lg p-2.5 text-[11px] font-medium cursor-pointer transition-all ${isDarkMode ? 'bg-slate-900 border-slate-700 hover:border-blue-500 text-slate-350 hover:text-white' : 'bg-white border-slate-200 hover:border-blue-500 text-slate-600'}`}>
-                          <span>📂 Pilih Gambar/Ikon Baru</span>
+                        <label className={`flex-grow flex items-center justify-center border border-dashed rounded-lg p-2 text-[11px] font-medium cursor-pointer transition-all ${isDarkMode ? 'bg-slate-900 border-slate-700 hover:border-blue-500 text-slate-350 hover:text-white' : 'bg-white border-slate-200 hover:border-blue-500 text-slate-600'}`}>
+                          <span>📂 Pilih Gambar/Ikon</span>
                           <input
                             type="file"
                             accept="image/*"
@@ -1995,10 +2013,14 @@ export default function AdminDashboard({
                         <div className="w-20 h-12 rounded bg-slate-900 overflow-hidden border border-slate-800/40 shrink-0">
                           <img src={settingsHero1 || 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=1920&q=80'} alt="Slide 1 Preview" className="w-full h-full object-cover" />
                         </div>
-                        <div className="flex-grow text-[10px] text-slate-400 font-mono truncate">
-                          {settingsHero1 ? '📂 Gambar Kustom Terunggah' : 'Menggunakan Gambar Default'}
-                        </div>
-                        <label className="px-3 py-2 text-center text-[10px] font-bold uppercase cursor-pointer rounded bg-[#0F52BA]/10 hover:bg-[#0F52BA]/20 text-[#0F52BA] dark:text-cyan-400 dark:bg-cyan-500/10 dark:hover:bg-cyan-500/20 transition-all shrink-0">
+                        <input
+                          type="text"
+                          value={settingsHero1}
+                          onChange={(e) => setSettingsHero1(e.target.value)}
+                          placeholder="Masukkan URL Gambar..."
+                          className={`flex-grow p-2 text-[10px] rounded border outline-none ${isDarkMode ? 'bg-slate-900 border-slate-800 text-white focus:border-cyan-400' : 'bg-white border-slate-200 text-slate-805 focus:border-[#0F52BA]'}`}
+                        />
+                        <label className="px-3 py-2 text-center text-[10px] font-bold uppercase cursor-pointer rounded bg-[#0F52BA]/10 hover:bg-[#0F52BA]/20 text-[#0F52BA] dark:text-cyan-400 dark:bg-cyan-500/10 dark:hover:bg-cyan-500/20 transition-all">
                           Pilih File
                           <input type="file" accept="image/*" className="hidden" onChange={(e) => { if(e.target.files?.[0]) handleHeroUploadChange(e.target.files[0], 1) }} />
                         </label>
@@ -2017,10 +2039,14 @@ export default function AdminDashboard({
                         <div className="w-20 h-12 rounded bg-slate-900 overflow-hidden border border-slate-800/40 shrink-0">
                           <img src={settingsHero2 || 'https://images.unsplash.com/photo-1498804103079-a6351b050096?auto=format&fit=crop&w=1920&q=80'} alt="Slide 2 Preview" className="w-full h-full object-cover" />
                         </div>
-                        <div className="flex-grow text-[10px] text-slate-400 font-mono truncate">
-                          {settingsHero2 ? '📂 Gambar Kustom Terunggah' : 'Menggunakan Gambar Default'}
-                        </div>
-                        <label className="px-3 py-2 text-center text-[10px] font-bold uppercase cursor-pointer rounded bg-[#0F52BA]/10 hover:bg-[#0F52BA]/20 text-[#0F52BA] dark:text-cyan-400 dark:bg-cyan-500/10 dark:hover:bg-cyan-500/20 transition-all shrink-0">
+                        <input
+                          type="text"
+                          value={settingsHero2}
+                          onChange={(e) => setSettingsHero2(e.target.value)}
+                          placeholder="Masukkan URL Gambar..."
+                          className={`flex-grow p-2 text-[10px] rounded border outline-none ${isDarkMode ? 'bg-slate-900 border-slate-800 text-white focus:border-cyan-400' : 'bg-white border-slate-200 text-slate-805 focus:border-[#0F52BA]'}`}
+                        />
+                        <label className="px-3 py-2 text-center text-[10px] font-bold uppercase cursor-pointer rounded bg-[#0F52BA]/10 hover:bg-[#0F52BA]/20 text-[#0F52BA] dark:text-cyan-400 dark:bg-cyan-500/10 dark:hover:bg-cyan-500/20 transition-all">
                           Pilih File
                           <input type="file" accept="image/*" className="hidden" onChange={(e) => { if(e.target.files?.[0]) handleHeroUploadChange(e.target.files[0], 2) }} />
                         </label>
@@ -2039,10 +2065,14 @@ export default function AdminDashboard({
                         <div className="w-20 h-12 rounded bg-slate-900 overflow-hidden border border-slate-800/40 shrink-0">
                           <img src={settingsHero3 || 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=1920&q=80'} alt="Slide 3 Preview" className="w-full h-full object-cover" />
                         </div>
-                        <div className="flex-grow text-[10px] text-slate-400 font-mono truncate">
-                          {settingsHero3 ? '📂 Gambar Kustom Terunggah' : 'Menggunakan Gambar Default'}
-                        </div>
-                        <label className="px-3 py-2 text-center text-[10px] font-bold uppercase cursor-pointer rounded bg-[#0F52BA]/10 hover:bg-[#0F52BA]/20 text-[#0F52BA] dark:text-cyan-400 dark:bg-cyan-500/10 dark:hover:bg-cyan-500/20 transition-all shrink-0">
+                        <input
+                          type="text"
+                          value={settingsHero3}
+                          onChange={(e) => setSettingsHero3(e.target.value)}
+                          placeholder="Masukkan URL Gambar..."
+                          className={`flex-grow p-2 text-[10px] rounded border outline-none ${isDarkMode ? 'bg-slate-900 border-slate-800 text-white focus:border-cyan-400' : 'bg-white border-slate-200 text-slate-805 focus:border-[#0F52BA]'}`}
+                        />
+                        <label className="px-3 py-2 text-center text-[10px] font-bold uppercase cursor-pointer rounded bg-[#0F52BA]/10 hover:bg-[#0F52BA]/20 text-[#0F52BA] dark:text-cyan-400 dark:bg-cyan-500/10 dark:hover:bg-cyan-500/20 transition-all">
                           Pilih File
                           <input type="file" accept="image/*" className="hidden" onChange={(e) => { if(e.target.files?.[0]) handleHeroUploadChange(e.target.files[0], 3) }} />
                         </label>
@@ -2061,10 +2091,14 @@ export default function AdminDashboard({
                         <div className="w-20 h-12 rounded bg-slate-900 overflow-hidden border border-slate-800/40 shrink-0">
                           <img src={settingsHero4 || 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=1920&q=80'} alt="Slide 4 Preview" className="w-full h-full object-cover" />
                         </div>
-                        <div className="flex-grow text-[10px] text-slate-400 font-mono truncate">
-                          {settingsHero4 ? '📂 Gambar Kustom Terunggah' : 'Menggunakan Gambar Default'}
-                        </div>
-                        <label className="px-3 py-2 text-center text-[10px] font-bold uppercase cursor-pointer rounded bg-[#0F52BA]/10 hover:bg-[#0F52BA]/20 text-[#0F52BA] dark:text-cyan-400 dark:bg-cyan-500/10 dark:hover:bg-cyan-500/20 transition-all shrink-0">
+                        <input
+                          type="text"
+                          value={settingsHero4}
+                          onChange={(e) => setSettingsHero4(e.target.value)}
+                          placeholder="Masukkan URL Gambar..."
+                          className={`flex-grow p-2 text-[10px] rounded border outline-none ${isDarkMode ? 'bg-slate-900 border-slate-800 text-white focus:border-cyan-400' : 'bg-white border-slate-200 text-slate-805 focus:border-[#0F52BA]'}`}
+                        />
+                        <label className="px-3 py-2 text-center text-[10px] font-bold uppercase cursor-pointer rounded bg-[#0F52BA]/10 hover:bg-[#0F52BA]/20 text-[#0F52BA] dark:text-cyan-400 dark:bg-cyan-500/10 dark:hover:bg-cyan-500/20 transition-all">
                           Pilih File
                           <input type="file" accept="image/*" className="hidden" onChange={(e) => { if(e.target.files?.[0]) handleHeroUploadChange(e.target.files[0], 4) }} />
                         </label>

@@ -1411,7 +1411,7 @@ export default function LandingPage({
 
       {/* 13. FOOTER AREA */}
       <footer id="footer" className="bg-[#0A1F44] text-slate-300 pt-16 pb-12 border-t border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-3 gap-12 text-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-12 text-sm">
           {/* Brand profile */}
           <div className="space-y-4">
             <div className="h-12 flex items-center bg-transparent">
@@ -1461,6 +1461,26 @@ export default function LandingPage({
             <p className="text-xs text-slate-400 leading-relaxed font-mono">
               Jam Buka: {settings.openingHours}
             </p>
+          </div>
+
+          {/* Newsletter subscription */}
+          <div className="space-y-4">
+            <h4 className="text-white font-bold text-xs uppercase tracking-widest text-cyan-400">Buletin Kulle Club</h4>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Daftar untuk mendapatkan undangan khusus ke pelatihan seduh kopi bulanan dan kedatangan biji kopi premium baru.
+            </p>
+            
+            <form onSubmit={(e) => { e.preventDefault(); alert('Terima kasih telah berlangganan! Periksa email Anda untuk mendapatkan kode diskon.'); }} className="flex gap-2">
+              <input
+                required
+                type="email"
+                placeholder="email@domain.com"
+                className="bg-white/5 border border-white/10 rounded-lg p-2 text-xs text-white placeholder-slate-500 outline-none w-full"
+              />
+              <button type="submit" className="px-3 bg-gradient-to-tr from-[#0F52BA] to-blue-500 hover:brightness-110 text-white rounded-lg text-xs font-bold font-mono">
+                SUB
+              </button>
+            </form>
           </div>
         </div>
 
