@@ -2013,14 +2013,10 @@ export default function AdminDashboard({
                         <div className="w-20 h-12 rounded bg-slate-900 overflow-hidden border border-slate-800/40 shrink-0">
                           <img src={settingsHero1 || 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=1920&q=80'} alt="Slide 1 Preview" className="w-full h-full object-cover" />
                         </div>
-                        <input
-                          type="text"
-                          value={settingsHero1}
-                          onChange={(e) => setSettingsHero1(e.target.value)}
-                          placeholder="Masukkan URL Gambar..."
-                          className={`flex-grow p-2 text-[10px] rounded border outline-none ${isDarkMode ? 'bg-slate-900 border-slate-800 text-white focus:border-cyan-400' : 'bg-white border-slate-200 text-slate-805 focus:border-[#0F52BA]'}`}
-                        />
-                        <label className="px-3 py-2 text-center text-[10px] font-bold uppercase cursor-pointer rounded bg-[#0F52BA]/10 hover:bg-[#0F52BA]/20 text-[#0F52BA] dark:text-cyan-400 dark:bg-cyan-500/10 dark:hover:bg-cyan-500/20 transition-all">
+                        <div className="flex-grow text-[10px] text-slate-400 font-mono truncate">
+                          {settingsHero1 ? '📂 Gambar Kustom Terunggah' : 'Menggunakan Gambar Default'}
+                        </div>
+                        <label className="px-3 py-2 text-center text-[10px] font-bold uppercase cursor-pointer rounded bg-[#0F52BA]/10 hover:bg-[#0F52BA]/20 text-[#0F52BA] dark:text-cyan-400 dark:bg-cyan-500/10 dark:hover:bg-cyan-500/20 transition-all shrink-0">
                           Pilih File
                           <input type="file" accept="image/*" className="hidden" onChange={(e) => { if(e.target.files?.[0]) handleHeroUploadChange(e.target.files[0], 1) }} />
                         </label>
@@ -2039,14 +2035,10 @@ export default function AdminDashboard({
                         <div className="w-20 h-12 rounded bg-slate-900 overflow-hidden border border-slate-800/40 shrink-0">
                           <img src={settingsHero2 || 'https://images.unsplash.com/photo-1498804103079-a6351b050096?auto=format&fit=crop&w=1920&q=80'} alt="Slide 2 Preview" className="w-full h-full object-cover" />
                         </div>
-                        <input
-                          type="text"
-                          value={settingsHero2}
-                          onChange={(e) => setSettingsHero2(e.target.value)}
-                          placeholder="Masukkan URL Gambar..."
-                          className={`flex-grow p-2 text-[10px] rounded border outline-none ${isDarkMode ? 'bg-slate-900 border-slate-800 text-white focus:border-cyan-400' : 'bg-white border-slate-200 text-slate-805 focus:border-[#0F52BA]'}`}
-                        />
-                        <label className="px-3 py-2 text-center text-[10px] font-bold uppercase cursor-pointer rounded bg-[#0F52BA]/10 hover:bg-[#0F52BA]/20 text-[#0F52BA] dark:text-cyan-400 dark:bg-cyan-500/10 dark:hover:bg-cyan-500/20 transition-all">
+                        <div className="flex-grow text-[10px] text-slate-400 font-mono truncate">
+                          {settingsHero2 ? '📂 Gambar Kustom Terunggah' : 'Menggunakan Gambar Default'}
+                        </div>
+                        <label className="px-3 py-2 text-center text-[10px] font-bold uppercase cursor-pointer rounded bg-[#0F52BA]/10 hover:bg-[#0F52BA]/20 text-[#0F52BA] dark:text-cyan-400 dark:bg-cyan-500/10 dark:hover:bg-cyan-500/20 transition-all shrink-0">
                           Pilih File
                           <input type="file" accept="image/*" className="hidden" onChange={(e) => { if(e.target.files?.[0]) handleHeroUploadChange(e.target.files[0], 2) }} />
                         </label>
@@ -2065,14 +2057,10 @@ export default function AdminDashboard({
                         <div className="w-20 h-12 rounded bg-slate-900 overflow-hidden border border-slate-800/40 shrink-0">
                           <img src={settingsHero3 || 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=1920&q=80'} alt="Slide 3 Preview" className="w-full h-full object-cover" />
                         </div>
-                        <input
-                          type="text"
-                          value={settingsHero3}
-                          onChange={(e) => setSettingsHero3(e.target.value)}
-                          placeholder="Masukkan URL Gambar..."
-                          className={`flex-grow p-2 text-[10px] rounded border outline-none ${isDarkMode ? 'bg-slate-900 border-slate-800 text-white focus:border-cyan-400' : 'bg-white border-slate-200 text-slate-805 focus:border-[#0F52BA]'}`}
-                        />
-                        <label className="px-3 py-2 text-center text-[10px] font-bold uppercase cursor-pointer rounded bg-[#0F52BA]/10 hover:bg-[#0F52BA]/20 text-[#0F52BA] dark:text-cyan-400 dark:bg-cyan-500/10 dark:hover:bg-cyan-500/20 transition-all">
+                        <div className="flex-grow text-[10px] text-slate-400 font-mono truncate">
+                          {settingsHero3 ? '📂 Gambar Kustom Terunggah' : 'Menggunakan Gambar Default'}
+                        </div>
+                        <label className="px-3 py-2 text-center text-[10px] font-bold uppercase cursor-pointer rounded bg-[#0F52BA]/10 hover:bg-[#0F52BA]/20 text-[#0F52BA] dark:text-cyan-400 dark:bg-cyan-500/10 dark:hover:bg-cyan-500/20 transition-all shrink-0">
                           Pilih File
                           <input type="file" accept="image/*" className="hidden" onChange={(e) => { if(e.target.files?.[0]) handleHeroUploadChange(e.target.files[0], 3) }} />
                         </label>
@@ -2091,14 +2079,10 @@ export default function AdminDashboard({
                         <div className="w-20 h-12 rounded bg-slate-900 overflow-hidden border border-slate-800/40 shrink-0">
                           <img src={settingsHero4 || 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=1920&q=80'} alt="Slide 4 Preview" className="w-full h-full object-cover" />
                         </div>
-                        <input
-                          type="text"
-                          value={settingsHero4}
-                          onChange={(e) => setSettingsHero4(e.target.value)}
-                          placeholder="Masukkan URL Gambar..."
-                          className={`flex-grow p-2 text-[10px] rounded border outline-none ${isDarkMode ? 'bg-slate-900 border-slate-800 text-white focus:border-cyan-400' : 'bg-white border-slate-200 text-slate-805 focus:border-[#0F52BA]'}`}
-                        />
-                        <label className="px-3 py-2 text-center text-[10px] font-bold uppercase cursor-pointer rounded bg-[#0F52BA]/10 hover:bg-[#0F52BA]/20 text-[#0F52BA] dark:text-cyan-400 dark:bg-cyan-500/10 dark:hover:bg-cyan-500/20 transition-all">
+                        <div className="flex-grow text-[10px] text-slate-400 font-mono truncate">
+                          {settingsHero4 ? '📂 Gambar Kustom Terunggah' : 'Menggunakan Gambar Default'}
+                        </div>
+                        <label className="px-3 py-2 text-center text-[10px] font-bold uppercase cursor-pointer rounded bg-[#0F52BA]/10 hover:bg-[#0F52BA]/20 text-[#0F52BA] dark:text-cyan-400 dark:bg-cyan-500/10 dark:hover:bg-cyan-500/20 transition-all shrink-0">
                           Pilih File
                           <input type="file" accept="image/*" className="hidden" onChange={(e) => { if(e.target.files?.[0]) handleHeroUploadChange(e.target.files[0], 4) }} />
                         </label>
