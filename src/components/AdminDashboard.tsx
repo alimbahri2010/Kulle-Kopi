@@ -1937,23 +1937,12 @@ export default function AdminDashboard({
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-mono uppercase tracking-wider text-slate-450">URL Ikon Favicon</label>
-                      <input
-                        type="text"
-                        value={settingsFavicon}
-                        onChange={(e) => setSettingsFavicon(e.target.value)}
-                        placeholder="https://example.com/logo.png atau Data URL"
-                        className={`w-full p-2.5 text-xs rounded-lg border outline-none ${isDarkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-850'}`}
-                      />
-                    </div>
-
+                  <div className="pt-2 max-w-sm">
                     <div className="space-y-1">
                       <label className="text-[10px] font-mono uppercase tracking-wider text-slate-450">Unggah File Ikon (.png, .jpg, .ico)</label>
                       <div className="flex items-center gap-2">
-                        <label className={`flex-grow flex items-center justify-center border border-dashed rounded-lg p-2 text-[11px] font-medium cursor-pointer transition-all ${isDarkMode ? 'bg-slate-900 border-slate-700 hover:border-blue-500 text-slate-350 hover:text-white' : 'bg-white border-slate-200 hover:border-blue-500 text-slate-600'}`}>
-                          <span>📂 Pilih Gambar/Ikon</span>
+                        <label className={`flex-grow flex items-center justify-center border border-dashed rounded-lg p-2.5 text-[11px] font-medium cursor-pointer transition-all ${isDarkMode ? 'bg-slate-900 border-slate-700 hover:border-blue-500 text-slate-350 hover:text-white' : 'bg-white border-slate-200 hover:border-blue-500 text-slate-600'}`}>
+                          <span>📂 Pilih Gambar/Ikon Baru</span>
                           <input
                             type="file"
                             accept="image/*"
