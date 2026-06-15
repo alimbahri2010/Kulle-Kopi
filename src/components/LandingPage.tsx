@@ -522,7 +522,7 @@ export default function LandingPage({
                     <Coffee className="w-5 h-5" />
                   </div>
                   <h4 className="font-bold text-sm uppercase">{settings.aboutFeature1Title || '☕ BIJI KOPI PILIHAN'}</h4>
-                  <p className="text-xs text-slate-400 mt-2">{settings.aboutFeature1Desc || '100% biji kopi Arabika single-origin Kintamani & Toraja yang disangrai perlahan untuk mengoptimalkan keaslian rasa.'}</p>
+                  <p className="text-xs text-slate-400 mt-2">{settings.aboutFeature1Desc || '100% biji kopi bontolojong yang disangrai perlahan untuk mengoptimalkan keaslian rasa.'}</p>
                 </div>
 
                 <div className={`p-5 rounded-2xl border transition-all ${isDarkMode ? 'bg-slate-900/40 border-slate-800' : 'bg-slate-50 border-slate-100'}`}>
