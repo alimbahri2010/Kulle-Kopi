@@ -16,6 +16,8 @@ import { MenuItem, Promotion, CafeSettings, Review, OrderItem, Order, GalleryIte
 import logoImg from '../assets/images/regenerated_image_1780051135628.png';
 // @ts-ignore
 import heroImg2 from '../assets/images/regenerated_image_1781538119145.jpg';
+// @ts-ignore
+import heroImg3 from '../assets/images/regenerated_image_1781558820689.jpg';
 
 const HERO_IMAGES = [
   'https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=1920&q=80',
@@ -75,7 +77,7 @@ export default function LandingPage({
   const activeHeroImages = [
     settings?.heroImageUrl1 || 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=1920&q=80',
     settings?.heroImageUrl2 || heroImg2,
-    settings?.heroImageUrl3 || 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=1920&q=80',
+    settings?.heroImageUrl3 || heroImg3,
     settings?.heroImageUrl4 || 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=1920&q=80'
   ];
 

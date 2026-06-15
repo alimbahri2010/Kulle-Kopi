@@ -15,6 +15,10 @@ import {
 import { MenuItem, Order, Customer, InventoryItem, Employee, Promotion, CafeSettings, OrderStatus, Category, GalleryItem, Review } from '../types';
 // @ts-ignore
 import logoImg from '../assets/images/regenerated_image_1780051135628.png';
+// @ts-ignore
+import heroImg2 from '../assets/images/regenerated_image_1781538119145.jpg';
+// @ts-ignore
+import heroImg3 from '../assets/images/regenerated_image_1781558820689.jpg';
 
 interface AdminDashboardProps {
   menuItems: MenuItem[];
@@ -2002,7 +2006,7 @@ export default function AdminDashboard({
                       </div>
                       <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
                         <div className="w-20 h-12 rounded bg-slate-900 overflow-hidden border border-slate-800/40 shrink-0">
-                          <img src={settingsHero2 || 'https://images.unsplash.com/photo-1498804103079-a6351b050096?auto=format&fit=crop&w=1920&q=80'} alt="Slide 2 Preview" className="w-full h-full object-cover" />
+                          <img src={settingsHero2 || heroImg2} alt="Slide 2 Preview" className="w-full h-full object-cover" />
                         </div>
                         <div className="flex-grow text-[10px] text-slate-400 font-mono truncate">
                           {settingsHero2 ? '📂 Gambar Kustom Terunggah' : 'Menggunakan Gambar Default'}
@@ -2024,7 +2028,7 @@ export default function AdminDashboard({
                       </div>
                       <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
                         <div className="w-20 h-12 rounded bg-slate-900 overflow-hidden border border-slate-800/40 shrink-0">
-                          <img src={settingsHero3 || 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=1920&q=80'} alt="Slide 3 Preview" className="w-full h-full object-cover" />
+                          <img src={settingsHero3 || heroImg3} alt="Slide 3 Preview" className="w-full h-full object-cover" />
                         </div>
                         <div className="flex-grow text-[10px] text-slate-400 font-mono truncate">
                           {settingsHero3 ? '📂 Gambar Kustom Terunggah' : 'Menggunakan Gambar Default'}
