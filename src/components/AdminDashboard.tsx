@@ -133,10 +133,6 @@ export default function AdminDashboard({
   const [settingsEmail, setSettingsEmail] = useState(settings.contactEmail);
   const [settingsWA, setSettingsWA] = useState(settings.whatsappNumber);
   const [settingsFavicon, setSettingsFavicon] = useState(settings.faviconUrl || '');
-  const [settingsHero1, setSettingsHero1] = useState(settings.heroImageUrl1 || '');
-  const [settingsHero2, setSettingsHero2] = useState(settings.heroImageUrl2 || '');
-  const [settingsHero3, setSettingsHero3] = useState(settings.heroImageUrl3 || '');
-  const [settingsHero4, setSettingsHero4] = useState(settings.heroImageUrl4 || '');
   const [settingsSavedSuccess, setSettingsSavedSuccess] = useState(false);
 
   // Tentang Kulle states
@@ -391,10 +387,6 @@ export default function AdminDashboard({
       contactEmail: settingsEmail,
       whatsappNumber: settingsWA,
       faviconUrl: settingsFavicon,
-      heroImageUrl1: settingsHero1,
-      heroImageUrl2: settingsHero2,
-      heroImageUrl3: settingsHero3,
-      heroImageUrl4: settingsHero4,
       themeColor: '#0F52BA'
     });
     setSettingsSavedSuccess(true);
@@ -557,24 +549,6 @@ export default function AdminDashboard({
     reader.readAsDataURL(file);
   };
 
-  const handleHeroUploadChange = (file: File, slideIdx: number) => {
-    if (!file) return;
-    if (file.size > 4 * 1024 * 1024) {
-      alert("Ukuran gambar hero tidak boleh melebihi 4MB.");
-      return;
-    }
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      if (typeof reader.result === 'string') {
-        if (slideIdx === 1) setSettingsHero1(reader.result);
-        if (slideIdx === 2) setSettingsHero2(reader.result);
-        if (slideIdx === 3) setSettingsHero3(reader.result);
-        if (slideIdx === 4) setSettingsHero4(reader.result);
-      }
-    };
-    reader.readAsDataURL(file);
-  };
-
   // --- METRIC STATISTICS CALCULATORS ---
   const totalCompletedOrders = orders.filter(o => o.status === 'completed');
   const totalSalesVal = totalCompletedOrders.reduce((acc, current) => acc + current.total, 0);
@@ -670,6 +644,13 @@ export default function AdminDashboard({
                 </div>
                 <h2 style={{ color: '#ffffff' }} className="text-2xl font-black tracking-tight mt-2">Kulle Kopi Admin</h2>
                 <p className="text-xs text-slate-400">Secure Access Gateway • Authorized Personnel Only</p>
+              </div>
+
+              {/* Quick tip box */}
+              <div className="p-3 bg-[#0F52BA]/10 border border-[#0F52BA]/20 rounded-xl text-[11px] text-[#0F52BA] dark:text-cyan-400 space-y-1">
+                <p className="font-bold">🔑 System Presets For Demonstrations:</p>
+                <p>Username: <span className="font-mono underline">admin</span></p>
+                <p>Password: <span className="font-mono underline">admin123</span></p>
               </div>
 
               <div className="space-y-3">
@@ -1930,12 +1911,23 @@ export default function AdminDashboard({
                     </div>
                   </div>
 
-                  <div className="pt-2 max-w-sm">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-mono uppercase tracking-wider text-slate-450">URL Ikon Favicon</label>
+                      <input
+                        type="text"
+                        value={settingsFavicon}
+                        onChange={(e) => setSettingsFavicon(e.target.value)}
+                        placeholder="https://example.com/logo.png atau Data URL"
+                        className={`w-full p-2.5 text-xs rounded-lg border outline-none ${isDarkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-850'}`}
+                      />
+                    </div>
+
                     <div className="space-y-1">
                       <label className="text-[10px] font-mono uppercase tracking-wider text-slate-450">Unggah File Ikon (.png, .jpg, .ico)</label>
                       <div className="flex items-center gap-2">
-                        <label className={`flex-grow flex items-center justify-center border border-dashed rounded-lg p-2.5 text-[11px] font-medium cursor-pointer transition-all ${isDarkMode ? 'bg-slate-900 border-slate-700 hover:border-blue-500 text-slate-350 hover:text-white' : 'bg-white border-slate-200 hover:border-blue-500 text-slate-600'}`}>
-                          <span>📂 Pilih Gambar/Ikon Baru</span>
+                        <label className={`flex-grow flex items-center justify-center border border-dashed rounded-lg p-2 text-[11px] font-medium cursor-pointer transition-all ${isDarkMode ? 'bg-slate-900 border-slate-700 hover:border-blue-500 text-slate-350 hover:text-white' : 'bg-white border-slate-200 hover:border-blue-500 text-slate-600'}`}>
+                          <span>📂 Pilih Gambar/Ikon</span>
                           <input
                             type="file"
                             accept="image/*"
@@ -1971,116 +1963,12 @@ export default function AdminDashboard({
                   </div>
                 </div>
 
-                {/* HERO SLIDESHOW IMAGES PANEL */}
-                <div className="p-5 rounded-2xl border border-slate-800/60 dark:border-slate-800 bg-slate-900/10 space-y-4">
-                  <div>
-                    <h4 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-slate-200 flex items-center gap-1.5 font-mono">
-                      🖼️ Foto Slider Hero Utama (Beranda Carousel)
-                    </h4>
-                    <p className="text-[11px] text-slate-400 mt-0.5">
-                      Ubah 4 gambar latar belakang yang bergantian otomatis di halaman muka toko. Silakan masukkan URL gambar atau unggah file secara langsung.
-                    </p>
-                  </div>
-
-                  <div className="space-y-4">
-                    {/* Slide 1 */}
-                    <div className={`p-3.5 rounded-xl border ${isDarkMode ? 'bg-slate-950/60 border-slate-800' : 'bg-slate-50 border-slate-200'} space-y-2.5`}>
-                      <div className="flex justify-between items-center">
-                        <span className="text-[10px] font-mono uppercase tracking-widest font-black text-[#0F52BA] dark:text-cyan-400">Gambar Slide 1 (Default: Area Luar Cafe)</span>
-                        {settingsHero1 && (
-                          <button type="button" onClick={() => setSettingsHero1('')} className="text-[9px] font-bold text-red-500 hover:underline">HAPUS & RESET</button>
-                        )}
-                      </div>
-                      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-                        <div className="w-20 h-12 rounded bg-slate-900 overflow-hidden border border-slate-800/40 shrink-0">
-                          <img src={settingsHero1 || 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=1920&q=80'} alt="Slide 1 Preview" className="w-full h-full object-cover" />
-                        </div>
-                        <div className="flex-grow text-[10px] text-slate-400 font-mono truncate">
-                          {settingsHero1 ? '📂 Gambar Kustom Terunggah' : 'Menggunakan Gambar Default'}
-                        </div>
-                        <label className="px-3 py-2 text-center text-[10px] font-bold uppercase cursor-pointer rounded bg-[#0F52BA]/10 hover:bg-[#0F52BA]/20 text-[#0F52BA] dark:text-cyan-400 dark:bg-cyan-500/10 dark:hover:bg-cyan-500/20 transition-all shrink-0">
-                          Pilih File
-                          <input type="file" accept="image/*" className="hidden" onChange={(e) => { if(e.target.files?.[0]) handleHeroUploadChange(e.target.files[0], 1) }} />
-                        </label>
-                      </div>
-                    </div>
-
-                    {/* Slide 2 */}
-                    <div className={`p-3.5 rounded-xl border ${isDarkMode ? 'bg-slate-950/60 border-slate-800' : 'bg-slate-50 border-slate-200'} space-y-2.5`}>
-                      <div className="flex justify-between items-center">
-                        <span className="text-[10px] font-mono uppercase tracking-widest font-black text-[#0F52BA] dark:text-cyan-400">Gambar Slide 2 (Default: Seduh Manual Saring)</span>
-                        {settingsHero2 && (
-                          <button type="button" onClick={() => setSettingsHero2('')} className="text-[9px] font-bold text-red-500 hover:underline">HAPUS & RESET</button>
-                        )}
-                      </div>
-                      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-                        <div className="w-20 h-12 rounded bg-slate-900 overflow-hidden border border-slate-800/40 shrink-0">
-                          <img src={settingsHero2 || 'https://images.unsplash.com/photo-1498804103079-a6351b050096?auto=format&fit=crop&w=1920&q=80'} alt="Slide 2 Preview" className="w-full h-full object-cover" />
-                        </div>
-                        <div className="flex-grow text-[10px] text-slate-400 font-mono truncate">
-                          {settingsHero2 ? '📂 Gambar Kustom Terunggah' : 'Menggunakan Gambar Default'}
-                        </div>
-                        <label className="px-3 py-2 text-center text-[10px] font-bold uppercase cursor-pointer rounded bg-[#0F52BA]/10 hover:bg-[#0F52BA]/20 text-[#0F52BA] dark:text-cyan-400 dark:bg-cyan-500/10 dark:hover:bg-cyan-500/20 transition-all shrink-0">
-                          Pilih File
-                          <input type="file" accept="image/*" className="hidden" onChange={(e) => { if(e.target.files?.[0]) handleHeroUploadChange(e.target.files[0], 2) }} />
-                        </label>
-                      </div>
-                    </div>
-
-                    {/* Slide 3 */}
-                    <div className={`p-3.5 rounded-xl border ${isDarkMode ? 'bg-slate-950/60 border-slate-800' : 'bg-slate-50 border-slate-200'} space-y-2.5`}>
-                      <div className="flex justify-between items-center">
-                        <span className="text-[10px] font-mono uppercase tracking-widest font-black text-[#0F52BA] dark:text-cyan-400">Gambar Slide 3 (Default: Deck Terbuka Luar)</span>
-                        {settingsHero3 && (
-                          <button type="button" onClick={() => setSettingsHero3('')} className="text-[9px] font-bold text-red-500 hover:underline">HAPUS & RESET</button>
-                        )}
-                      </div>
-                      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-                        <div className="w-20 h-12 rounded bg-slate-900 overflow-hidden border border-slate-800/40 shrink-0">
-                          <img src={settingsHero3 || 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=1920&q=80'} alt="Slide 3 Preview" className="w-full h-full object-cover" />
-                        </div>
-                        <div className="flex-grow text-[10px] text-slate-400 font-mono truncate">
-                          {settingsHero3 ? '📂 Gambar Kustom Terunggah' : 'Menggunakan Gambar Default'}
-                        </div>
-                        <label className="px-3 py-2 text-center text-[10px] font-bold uppercase cursor-pointer rounded bg-[#0F52BA]/10 hover:bg-[#0F52BA]/20 text-[#0F52BA] dark:text-cyan-400 dark:bg-cyan-500/10 dark:hover:bg-cyan-500/20 transition-all shrink-0">
-                          Pilih File
-                          <input type="file" accept="image/*" className="hidden" onChange={(e) => { if(e.target.files?.[0]) handleHeroUploadChange(e.target.files[0], 3) }} />
-                        </label>
-                      </div>
-                    </div>
-
-                    {/* Slide 4 */}
-                    <div className={`p-3.5 rounded-xl border ${isDarkMode ? 'bg-slate-950/60 border-slate-800' : 'bg-slate-50 border-slate-200'} space-y-2.5`}>
-                      <div className="flex justify-between items-center">
-                        <span className="text-[10px] font-mono uppercase tracking-widest font-black text-[#0F52BA] dark:text-cyan-400">Gambar Slide 4 (Default: Detail Flat White)</span>
-                        {settingsHero4 && (
-                          <button type="button" onClick={() => setSettingsHero4('')} className="text-[9px] font-bold text-red-500 hover:underline">HAPUS & RESET</button>
-                        )}
-                      </div>
-                      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-                        <div className="w-20 h-12 rounded bg-slate-900 overflow-hidden border border-slate-800/40 shrink-0">
-                          <img src={settingsHero4 || 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=1920&q=80'} alt="Slide 4 Preview" className="w-full h-full object-cover" />
-                        </div>
-                        <div className="flex-grow text-[10px] text-slate-400 font-mono truncate">
-                          {settingsHero4 ? '📂 Gambar Kustom Terunggah' : 'Menggunakan Gambar Default'}
-                        </div>
-                        <label className="px-3 py-2 text-center text-[10px] font-bold uppercase cursor-pointer rounded bg-[#0F52BA]/10 hover:bg-[#0F52BA]/20 text-[#0F52BA] dark:text-cyan-400 dark:bg-cyan-500/10 dark:hover:bg-cyan-500/20 transition-all shrink-0">
-                          Pilih File
-                          <input type="file" accept="image/*" className="hidden" onChange={(e) => { if(e.target.files?.[0]) handleHeroUploadChange(e.target.files[0], 4) }} />
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="pt-2">
-                  <button
-                    type="submit"
-                    className="px-6 py-2.5 bg-gradient-to-r from-[#0F52BA] to-blue-500 font-bold text-xs uppercase tracking-wider text-white rounded-xl shadow shadow-blue-500/20"
-                  >
-                    SIMPAN KONFIGURASI SITUS
-                  </button>
-                </div>
+                <button
+                  type="submit"
+                  className="px-6 py-2.5 bg-gradient-to-r from-[#0F52BA] to-blue-500 font-bold text-xs uppercase tracking-wider text-white rounded-xl shadow shadow-blue-500/20"
+                >
+                  SIMPAN KONFIGURASI SITUS
+                </button>
 
                 {settingsSavedSuccess && (
                   <p className="text-xs text-emerald-500 font-bold">✓ Pengaturan utama sukses disimpan! Landing page berhasil diperbarui secara real-time.</p>
