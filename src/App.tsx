@@ -18,6 +18,7 @@ import {
 } from './initialData';
 import LandingPage from './components/LandingPage';
 import AdminDashboard from './components/AdminDashboard';
+import { supabase } from './lib/supabaseClient';
 
 export default function App() {
   // Portal View Router State ('customer' | 'admin')
@@ -37,53 +38,115 @@ export default function App() {
   const [galleryPhotos, setGalleryPhotos] = useState<GalleryItem[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
 
-  // Load state from local storage on bootstrap
+  // Load state from Supabase or fallback to Local Storage / INITIAL_DATA
   useEffect(() => {
-    try {
-      const storedTheme = localStorage.getItem('kulle_dark_mode');
-      if (storedTheme !== null) {
-        setIsDarkMode(storedTheme === 'true');
+    const loadAllData = async () => {
+      try {
+        const storedTheme = localStorage.getItem('kulle_dark_mode');
+        if (storedTheme !== null) {
+          setIsDarkMode(storedTheme === 'true');
+        }
+
+        // --- 1. Load Settings ---
+        let loadedSettings = INITIAL_SETTINGS;
+        const storedSettings = localStorage.getItem('kulle_settings');
+        if (storedSettings) {
+          try { loadedSettings = JSON.parse(storedSettings); } catch (err) {}
+        }
+        setSettings(loadedSettings);
+
+        try {
+          const { data: dbSettings, error: errSettings } = await supabase
+            .from('settings')
+            .select('*')
+            .maybeSingle();
+          if (!errSettings && dbSettings) {
+            setSettings(dbSettings);
+          }
+        } catch (e) {
+          console.log('Tabel "settings" belum siap di Supabase, menggunakan data lokal.');
+        }
+
+        // --- 2. Load Reviews ---
+        let loadedReviews = INITIAL_REVIEWS;
+        const storedReviews = localStorage.getItem('kulle_reviews');
+        if (storedReviews) {
+          try { loadedReviews = JSON.parse(storedReviews); } catch (err) {}
+        }
+        setReviews(loadedReviews);
+
+        try {
+          const { data: dbReviews, error: errReviews } = await supabase
+            .from('reviews')
+            .select('*')
+            .order('date', { ascending: false });
+          if (!errReviews && dbReviews && dbReviews.length > 0) {
+            setReviews(dbReviews);
+          }
+        } catch (e) {
+          console.log('Tabel "reviews" belum siap di Supabase, menggunakan data lokal.');
+        }
+
+        // --- 3. Load Menu Items ---
+        let loadedMenu = INITIAL_MENU_ITEMS;
+        const storedItems = localStorage.getItem('kulle_menu_items');
+        if (storedItems) {
+          try { loadedMenu = JSON.parse(storedItems); } catch (err) {}
+        }
+        setMenuItems(loadedMenu);
+
+        try {
+          const { data: dbMenu, error: errMenu } = await supabase
+            .from('menu_items')
+            .select('*');
+          if (!errMenu && dbMenu && dbMenu.length > 0) {
+            setMenuItems(dbMenu);
+          }
+        } catch (e) {
+          console.log('Tabel "menu_items" belum siap di Supabase, menggunakan data lokal.');
+        }
+
+        // --- 4. Load Gallery Photos ---
+        let loadedGallery = INITIAL_GALLERY_PHOTOS;
+        const storedGallery = localStorage.getItem('kulle_gallery_photos');
+        if (storedGallery) {
+          try { loadedGallery = JSON.parse(storedGallery); } catch (err) {}
+        }
+        setGalleryPhotos(loadedGallery);
+
+        try {
+          const { data: dbGallery, error: errGallery } = await supabase
+            .from('gallery_items')
+            .select('*');
+          if (!errGallery && dbGallery && dbGallery.length > 0) {
+            setGalleryPhotos(dbGallery);
+          }
+        } catch (e) {
+          console.log('Tabel "gallery_items" belum siap di Supabase, menggunakan data lokal.');
+        }
+
+        // --- 5. Load Other local-only states ---
+        const storedOrders = localStorage.getItem('kulle_orders');
+        setOrders(storedOrders ? JSON.parse(storedOrders) : INITIAL_ORDERS);
+
+        const storedCustomers = localStorage.getItem('kulle_customers');
+        setCustomers(storedCustomers ? JSON.parse(storedCustomers) : INITIAL_CUSTOMERS);
+
+        const storedInventory = localStorage.getItem('kulle_inventory');
+        setInventory(storedInventory ? JSON.parse(storedInventory) : INITIAL_INVENTORY);
+
+        const storedEmployees = localStorage.getItem('kulle_employees');
+        setEmployees(storedEmployees ? JSON.parse(storedEmployees) : INITIAL_EMPLOYEES);
+
+        const storedPromos = localStorage.getItem('kulle_promotions');
+        setPromotions(storedPromos ? JSON.parse(storedPromos) : INITIAL_PROMOTIONS);
+
+      } catch (e) {
+        console.error('Error loading bootstrap data:', e);
       }
+    };
 
-      const storedItems = localStorage.getItem('kulle_menu_items');
-      setMenuItems(storedItems ? JSON.parse(storedItems) : INITIAL_MENU_ITEMS);
-
-      const storedOrders = localStorage.getItem('kulle_orders');
-      setOrders(storedOrders ? JSON.parse(storedOrders) : INITIAL_ORDERS);
-
-      const storedCustomers = localStorage.getItem('kulle_customers');
-      setCustomers(storedCustomers ? JSON.parse(storedCustomers) : INITIAL_CUSTOMERS);
-
-      const storedInventory = localStorage.getItem('kulle_inventory');
-      setInventory(storedInventory ? JSON.parse(storedInventory) : INITIAL_INVENTORY);
-
-      const storedEmployees = localStorage.getItem('kulle_employees');
-      setEmployees(storedEmployees ? JSON.parse(storedEmployees) : INITIAL_EMPLOYEES);
-
-      const storedPromos = localStorage.getItem('kulle_promotions');
-      setPromotions(storedPromos ? JSON.parse(storedPromos) : INITIAL_PROMOTIONS);
-
-      const storedSettings = localStorage.getItem('kulle_settings');
-      setSettings(storedSettings ? JSON.parse(storedSettings) : INITIAL_SETTINGS);
-
-      const storedGallery = localStorage.getItem('kulle_gallery_photos');
-      setGalleryPhotos(storedGallery ? JSON.parse(storedGallery) : INITIAL_GALLERY_PHOTOS);
-
-      const storedReviews = localStorage.getItem('kulle_reviews');
-      setReviews(storedReviews ? JSON.parse(storedReviews) : INITIAL_REVIEWS);
-    } catch (e) {
-      console.error('Error loading data from storage:', e);
-      // Fallback to static
-      setMenuItems(INITIAL_MENU_ITEMS);
-      setOrders(INITIAL_ORDERS);
-      setCustomers(INITIAL_CUSTOMERS);
-      setInventory(INITIAL_INVENTORY);
-      setEmployees(INITIAL_EMPLOYEES);
-      setPromotions(INITIAL_PROMOTIONS);
-      setSettings(INITIAL_SETTINGS);
-      setGalleryPhotos(INITIAL_GALLERY_PHOTOS);
-      setReviews(INITIAL_REVIEWS);
-    }
+    loadAllData();
   }, []);
 
   // Update DOM hierarchy on theme change
@@ -109,10 +172,15 @@ export default function App() {
     }
   }, [settings.faviconUrl]);
 
-  // Synchronize state helpers to local storage
-  const handleUpdateMenu = (updated: MenuItem[]) => {
+  // Synchronize state helpers to local storage and sync to Supabase
+  const handleUpdateMenu = async (updated: MenuItem[]) => {
     setMenuItems(updated);
     localStorage.setItem('kulle_menu_items', JSON.stringify(updated));
+    try {
+      await supabase.from('menu_items').upsert(updated);
+    } catch (e) {
+      console.log('Sinkronisasi menu ke Supabase ditunda (tabel belum terbentuk).');
+    }
   };
 
   const handleUpdateOrders = (updated: Order[]) => {
@@ -135,19 +203,34 @@ export default function App() {
     localStorage.setItem('kulle_promotions', JSON.stringify(updated));
   };
 
-  const handleUpdateSettings = (updated: CafeSettings) => {
+  const handleUpdateSettings = async (updated: CafeSettings) => {
     setSettings(updated);
     localStorage.setItem('kulle_settings', JSON.stringify(updated));
+    try {
+      await supabase.from('settings').upsert({ id: 'current_settings', ...updated });
+    } catch (e) {
+      console.log('Sinkronisasi settings ke Supabase ditunda (tabel belum terbentuk).');
+    }
   };
 
-  const handleUpdateGallery = (updated: GalleryItem[]) => {
+  const handleUpdateGallery = async (updated: GalleryItem[]) => {
     setGalleryPhotos(updated);
     localStorage.setItem('kulle_gallery_photos', JSON.stringify(updated));
+    try {
+      await supabase.from('gallery_items').upsert(updated);
+    } catch (e) {
+      console.log('Sinkronisasi galeri foto ke Supabase ditunda (tabel belum terbentuk).');
+    }
   };
 
-  const handleUpdateReviews = (updated: Review[]) => {
+  const handleUpdateReviews = async (updated: Review[]) => {
     setReviews(updated);
     localStorage.setItem('kulle_reviews', JSON.stringify(updated));
+    try {
+      await supabase.from('reviews').upsert(updated);
+    } catch (e) {
+      console.log('Sinkronisasi reviews ke Supabase ditunda (tabel belum terbentuk).');
+    }
   };
 
   // Live order checkout pipeline simulation (online ordering integration)
