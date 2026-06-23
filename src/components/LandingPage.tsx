@@ -15,6 +15,8 @@ import { MenuItem, Promotion, CafeSettings, Review, OrderItem, Order, GalleryIte
 // @ts-ignore
 import logoImg from '../assets/images/regenerated_image_1780051135628.png';
 // @ts-ignore
+import heroImg1 from '../assets/images/regenerated_image_1781558986012.jpg';
+// @ts-ignore
 import heroImg2 from '../assets/images/regenerated_image_1781558986012.jpg';
 // @ts-ignore
 import heroImg3 from '../assets/images/regenerated_image_1781558820689.jpg';
@@ -22,13 +24,6 @@ import heroImg3 from '../assets/images/regenerated_image_1781558820689.jpg';
 import heroImg4 from '../assets/images/regenerated_image_1781558991574.jpg';
 // @ts-ignore
 import aboutImg from '../assets/images/regenerated_image_1782204336376.jpg';
-
-const HERO_IMAGES = [
-  'https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=1920&q=80',
-  'https://images.unsplash.com/photo-1498804103079-a6351b050096?auto=format&fit=crop&w=1920&q=80',
-  'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=1920&q=80',
-  'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=1920&q=80'
-];
 
 interface LandingPageProps {
   menuItems: MenuItem[];
@@ -79,7 +74,7 @@ export default function LandingPage({
 
   // Dynamic Hero images from settings or fallback to defaults
   const activeHeroImages = [
-    settings?.heroImageUrl1 || 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=1920&q=80',
+    settings?.heroImageUrl1 || heroImg1,
     settings?.heroImageUrl2 || heroImg2,
     settings?.heroImageUrl3 || heroImg3,
     settings?.heroImageUrl4 || heroImg4
