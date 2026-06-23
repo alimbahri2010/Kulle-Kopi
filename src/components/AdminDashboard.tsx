@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   BarChart3, Activity, ShoppingBag, Users, Calendar, Settings, 
@@ -13,6 +13,7 @@ import {
   DollarSign, RefreshCcw, Landmark, Upload, Image, Info, MessageSquare, Star
  } from 'lucide-react';
 import { MenuItem, Order, Customer, InventoryItem, Employee, Promotion, CafeSettings, OrderStatus, Category, GalleryItem, Review } from '../types';
+import { supabase } from '../supabaseClient';
 // @ts-ignore
 import logoImg from '../assets/images/regenerated_image_1780051135628.png';
 // @ts-ignore
@@ -69,16 +70,67 @@ export default function AdminDashboard({
 }: AdminDashboardProps) {
   // Authentication states
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [authEmail, setAuthEmail] = useState('admin');
-  const [authPassword, setAuthPassword] = useState('admin123');
+  const [authEmail, setAuthEmail] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
   const [authRole, setAuthRole] = useState<'Admin' | 'Barista' | 'Chef'>('Admin');
   const [authError, setAuthError] = useState('');
+  const [signupSuccessMsg, setSignupSuccessMsg] = useState('');
   const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
   const [forgotSuccess, setForgotSuccess] = useState(false);
 
+  // Registration states
+  const [isRegisterMode, setIsRegisterMode] = useState(false);
+  const [regFullName, setRegFullName] = useState('');
+  const [regEmail, setRegEmail] = useState('');
+  const [regPassword, setRegPassword] = useState('');
+  const [regSuccess, setRegSuccess] = useState('');
+  const [regError, setRegError] = useState('');
+  const [registeredUsers, setRegisteredUsers] = useState<Array<{ fullName: string; email: string; password: string }>>(() => {
+    const saved = localStorage.getItem('kulle_registered_users');
+    return saved ? JSON.parse(saved) : [
+      { fullName: 'Admin Kulle', email: 'admin', password: 'admin123' },
+      { fullName: 'Admin Kulle', email: 'admin@kullekopi.cafe', password: 'admin123' }
+    ];
+  });
+
   // Layout navigation state
   const [activeSidebarTab, setActiveSidebarTab] = useState('dashboard');
+
+  // Synchronize with Supabase Auth session and protect private views
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        setIsAuthenticated(true);
+      } else {
+        setIsAuthenticated(false);
+        // Protect private pages: if there is no session, redirect to '/login'
+        if (window.location.pathname !== '/login') {
+          window.history.pushState({}, '', '/login');
+        }
+      }
+    };
+    checkSession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        setIsAuthenticated(true);
+        if (window.location.pathname === '/login') {
+          window.history.pushState({}, '', '/');
+        }
+      } else {
+        setIsAuthenticated(false);
+        if (window.location.pathname !== '/login') {
+          window.history.pushState({}, '', '/login');
+        }
+      }
+    });
+
+    return () => {
+      subscription?.unsubscribe();
+    };
+  }, []);
   const [sidebarCollapsible, setSidebarCollapsible] = useState(false);
   const [notifications, setNotifications] = useState<string[]>([
     'New pending table order ORD-9304 arrived.',
@@ -109,6 +161,7 @@ export default function AdminDashboard({
 
   // Inventory
   const [invFormOpen, setInvFormOpen] = useState(false);
+  const [editingInventoryItem, setEditingInventoryItem] = useState<InventoryItem | null>(null);
   const [invName, setInvName] = useState('');
   const [invStock, setInvStock] = useState(10);
   const [invUnit, setInvUnit] = useState('kg');
@@ -174,13 +227,64 @@ export default function AdminDashboard({
   const [reviewFormAvatar, setReviewFormAvatar] = useState('');
 
   // Authentication validation
-  const handleAuthSubmit = (e: React.FormEvent) => {
+  const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if ((authEmail === 'admin' || authEmail === 'admin@kullekopi.cafe') && authPassword === 'admin123') {
-      setIsAuthenticated(true);
-      setAuthError('');
-    } else {
-      setAuthError('Invalid credentials. Tip: Use default admin / admin123');
+    setAuthError('');
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: authEmail.trim(),
+        password: authPassword,
+      });
+
+      if (error) {
+        setAuthError(error.message);
+      } else {
+        setIsAuthenticated(true);
+        setAuthError('');
+      }
+    } catch (err: any) {
+      setAuthError(err?.message || 'Terjadi kesalahan sistem saat masuk.');
+    }
+  };
+
+  const handleRegisterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!regFullName || !regEmail || !regPassword) {
+      setRegError('Semua field wajib diisi.');
+      return;
+    }
+    setRegError('');
+    setRegSuccess('');
+
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: regEmail.trim(),
+        password: regPassword,
+        options: {
+          data: {
+            full_name: regFullName,
+          }
+        }
+      });
+
+      if (error) {
+        setRegError(error.message);
+      } else {
+        // Prepare the sign-in form
+        setAuthEmail(regEmail.trim());
+        setAuthPassword('');
+        setSignupSuccessMsg("Your account has been created. Please check your email and verify your address before logging in.");
+        
+        // Reset full registration states
+        setRegFullName('');
+        setRegEmail('');
+        setRegPassword('');
+        
+        // Redirect to Sign In page
+        setIsRegisterMode(false);
+      }
+    } catch (err: any) {
+      setRegError(err?.message || 'Terjadi kesalahan sistem saat mendaftar.');
     }
   };
 
@@ -327,18 +431,43 @@ export default function AdminDashboard({
   const handleSaveInventory = (e: React.FormEvent) => {
     e.preventDefault();
     if (!invName) return;
-    const newItem: InventoryItem = {
-      id: 'i_' + Date.now(),
-      name: invName,
-      stock: Number(invStock),
-      unit: invUnit,
-      minStock: Number(invMin),
-      category: invCategory,
-      supplier: invSupplier || 'General Distributor'
-    };
-    onUpdateInventory([...inventory, newItem]);
+    
+    if (editingInventoryItem) {
+      const updated = inventory.map(item => 
+        item.id === editingInventoryItem.id 
+          ? {
+              ...item,
+              name: invName,
+              stock: Number(invStock),
+              unit: invUnit,
+              minStock: Number(invMin),
+              category: invCategory,
+              supplier: invSupplier || 'General Distributor'
+            }
+          : item
+      );
+      onUpdateInventory(updated);
+      setEditingInventoryItem(null);
+    } else {
+      const newItem: InventoryItem = {
+        id: 'i_' + Date.now(),
+        name: invName,
+        stock: Number(invStock),
+        unit: invUnit,
+        minStock: Number(invMin),
+        category: invCategory,
+        supplier: invSupplier || 'General Distributor'
+      };
+      onUpdateInventory([...inventory, newItem]);
+    }
+    
     setInvFormOpen(false);
     setInvName('');
+    setInvStock(10);
+    setInvUnit('kg');
+    setInvMin(5);
+    setInvCategory('Supplier Core');
+    setInvSupplier('');
   };
 
   // Employee Save
@@ -670,24 +799,98 @@ export default function AdminDashboard({
                 Return to Access Gateway
               </button>
             </form>
+          ) : isRegisterMode ? (
+            <form onSubmit={handleRegisterSubmit} className="space-y-6">
+              <div className="text-center space-y-2">
+                <div className="mx-auto w-12 h-12 bg-[#0F52BA]/15 rounded-xl flex items-center justify-center text-[#0F52BA] text-xl font-bold">
+                  📝
+                </div>
+                <h2 style={{ color: isDarkMode ? '#ffffff' : '#0f52ba' }} className="text-2xl font-black tracking-tight mt-2">Daftar Akun Baru</h2>
+                <p className="text-xs text-slate-400">Silakan lengkapi formulir pendaftaran di bawah</p>
+              </div>
+
+              <div className="space-y-3">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-mono uppercase tracking-widest text-slate-400">Nama Lengkap</label>
+                  <input
+                    required
+                    type="text"
+                    value={regFullName}
+                    onChange={(e) => setRegFullName(e.target.value)}
+                    placeholder="Contoh: Alim Bahri"
+                    className={`w-full p-3 text-sm rounded-xl border outline-none ${isDarkMode ? 'bg-slate-950 border-slate-800 text-white' : 'bg-slate-50 border-slate-200 text-slate-800'}`}
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-mono uppercase tracking-widest text-slate-400">Email Address</label>
+                  <input
+                    required
+                    type="email"
+                    value={regEmail}
+                    onChange={(e) => setRegEmail(e.target.value)}
+                    placeholder="Contoh: alimbahri@gmail.com"
+                    className={`w-full p-3 text-sm rounded-xl border outline-none ${isDarkMode ? 'bg-slate-950 border-slate-800 text-white' : 'bg-slate-50 border-slate-200 text-slate-800'}`}
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-mono uppercase tracking-widest text-slate-400">Password</label>
+                  <input
+                    required
+                    type="password"
+                    value={regPassword}
+                    onChange={(e) => setRegPassword(e.target.value)}
+                    placeholder="Masukkan password Anda"
+                    className={`w-full p-3 text-sm rounded-xl border outline-none ${isDarkMode ? 'bg-slate-950 border-slate-800 text-white' : 'bg-slate-50 border-slate-200 text-slate-800'}`}
+                  />
+                </div>
+              </div>
+
+              {regError && <p className="text-xs text-red-500 font-bold">{regError}</p>}
+              {regSuccess && <p className="text-xs text-emerald-500 font-bold">{regSuccess}</p>}
+
+              <button
+                type="submit"
+                className="w-full py-3.5 bg-gradient-to-r from-[#0F52BA] to-blue-500 text-white font-extrabold text-xs uppercase tracking-widest rounded-xl hover:translate-y-[-1px] transition-all shadow"
+              >
+                DAFTAR AKUN BARU
+              </button>
+
+              <div className="flex justify-between items-center text-xs text-slate-400">
+                <button type="button" onClick={() => setIsRegisterMode(false)} className="hover:text-[#0F52BA] dark:hover:text-cyan-400 underline font-semibold">
+                  Sudah punya akun? Masuk
+                </button>
+                <button type="button" onClick={() => setView('customer')} className="underline">
+                  Back to Site
+                </button>
+              </div>
+            </form>
           ) : (
             <form onSubmit={handleAuthSubmit} className="space-y-6">
               <div className="text-center space-y-2">
                 <div className="mx-auto w-12 h-12 bg-[#0F52BA]/15 rounded-xl flex items-center justify-center text-[#0F52BA] text-xl font-bold">
                   ☕
                 </div>
-                <h2 style={{ color: '#ffffff' }} className="text-2xl font-black tracking-tight mt-2">Kulle Kopi Admin</h2>
+                <h2 style={{ color: isDarkMode ? '#ffffff' : '#000000' }} className="text-2xl font-black tracking-tight mt-2">Kulle Kopi Admin</h2>
                 <p className="text-xs text-slate-400">Secure Access Gateway • Authorized Personnel Only</p>
               </div>
 
+              {signupSuccessMsg && (
+                <div className="p-3.5 text-xs text-emerald-500 bg-emerald-500/10 border border-emerald-500/20 rounded-xl font-bold leading-relaxed text-center">
+                  {signupSuccessMsg}
+                </div>
+              )}
+
               <div className="space-y-3">
                 <div className="space-y-1">
-                  <label className="text-[10px] font-mono uppercase tracking-widest text-slate-400">Username</label>
+                  <label className="text-[10px] font-mono uppercase tracking-widest text-slate-400">Username / Email</label>
                   <input
                     required
                     type="text"
                     value={authEmail}
                     onChange={(e) => setAuthEmail(e.target.value)}
+                    placeholder="@gmail.com"
                     className={`w-full p-3 text-sm rounded-xl border outline-none ${isDarkMode ? 'bg-slate-950 border-slate-800 text-white' : 'bg-slate-50 border-slate-200 text-slate-800'}`}
                   />
                 </div>
@@ -699,6 +902,7 @@ export default function AdminDashboard({
                     type="password"
                     value={authPassword}
                     onChange={(e) => setAuthPassword(e.target.value)}
+                    placeholder="password"
                     className={`w-full p-3 text-sm rounded-xl border outline-none ${isDarkMode ? 'bg-slate-950 border-slate-800 text-white' : 'bg-slate-50 border-slate-200 text-slate-800'}`}
                   />
                 </div>
@@ -717,7 +921,12 @@ export default function AdminDashboard({
                 <button type="button" onClick={() => setForgotPasswordOpen(true)} className="hover:text-amber-500">
                   Forgot Password?
                 </button>
-                <button type="button" onClick={() => setView('customer')} className="underline">
+                <button type="button" onClick={() => { setIsRegisterMode(true); setSignupSuccessMsg(''); setAuthError(''); }} className="hover:text-[#0F52BA] dark:hover:text-cyan-400 underline font-semibold">
+                  Register Akun
+                </button>
+              </div>
+              <div className="text-center pt-2">
+                <button type="button" onClick={() => setView('customer')} className="text-xs text-slate-400 underline hover:text-slate-200">
                   Back to Site
                 </button>
               </div>
@@ -737,7 +946,6 @@ export default function AdminDashboard({
       case 'customers': return 'Data Pelanggan';
       case 'analytics': return 'Analitik Penjualan';
       case 'inventory': return 'Stok Bahan Baku';
-      case 'employees': return 'Shift & Jadwal Staf';
       case 'promotions': return 'Kode Promo & Diskon';
       case 'gallery': return 'Galeri Foto Cafe';
       case 'about_kulle': return 'Tentang Kulle';
@@ -793,7 +1001,6 @@ export default function AdminDashboard({
               { id: 'customers', label: 'Data Pelanggan', icon: <Users className="w-4.5 h-4.5" /> },
               { id: 'analytics', label: 'Analitik Penjualan', icon: <BarChart3 className="w-4.5 h-4.5" /> },
               { id: 'inventory', label: 'Stok Bahan Baku', icon: <PackageOpen className="w-4.5 h-4.5" /> },
-              { id: 'employees', label: 'Shift & Jadwal Staf', icon: <Calendar className="w-4.5 h-4.5" /> },
               { id: 'promotions', label: 'Kode Promo & Diskon', icon: <Tag className="w-4.5 h-4.5" /> },
               { id: 'gallery', label: 'Edit Galeri', icon: <Image className="w-4.5 h-4.5" /> },
               { id: 'about_kulle', label: 'Tentang Kulle', icon: <Info className="w-4.5 h-4.5" /> },
@@ -826,7 +1033,10 @@ export default function AdminDashboard({
           )}
 
           <button
-            onClick={() => setIsAuthenticated(false)}
+            onClick={async () => {
+              await supabase.auth.signOut();
+              setIsAuthenticated(false);
+            }}
             className="w-full flex items-center p-3 text-red-400 hover:bg-red-500/10 hover:text-red-300 rounded-xl text-xs font-bold"
           >
             <LogOut className="w-4.5 h-4.5 shrink-0" />
@@ -1396,7 +1606,7 @@ export default function AdminDashboard({
                       <th className="p-4">Jumlah Minimum</th>
                       <th className="p-4">Kategori Klasifikasi</th>
                       <th className="p-4">Pemasok Utama</th>
-                      <th className="p-4 text-right font-sans">Aksi Tambah Stok</th>
+                      <th className="p-4 text-right font-sans">Aksi Manajemen</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-805/10 dark:divide-slate-800/60">
@@ -1404,23 +1614,52 @@ export default function AdminDashboard({
                       <tr key={item.id} className="hover:bg-slate-905">
                         <td className="p-4 font-mono font-bold text-cyan-400">{item.id}</td>
                         <td className="p-4 font-bold">{item.name}</td>
-                        <td className="p-4 font-mono font-bold text-slate-100">
-                          <span className={item.stock <= item.minStock ? 'text-amber-500 font-black' : 'text-slate-900 dark:text-wrap'}>
+                        <td className="p-4 font-mono font-bold">
+                          <span className={item.stock <= item.minStock ? 'text-amber-500 font-black' : (isDarkMode ? 'text-slate-100' : 'text-slate-900')}>
                             {item.stock} {item.unit}
                           </span>
                         </td>
                         <td className="p-4 font-mono text-slate-400">{item.minStock} {item.unit}</td>
                         <td className="p-4 uppercase tracking-wider text-[10px] font-mono">{item.category}</td>
                         <td className="p-4 font-mono text-slate-400">{item.supplier}</td>
-                        <td className="p-4 text-right">
+                        <td className="p-4 text-right space-x-1 sm:space-x-2">
                           <button
                             onClick={() => {
                               const updated = inventory.map(i => i.id === item.id ? { ...i, stock: Number(i.stock) + 10 } : i);
                               onUpdateInventory(updated);
                             }}
-                            className="p-1.5 bg-slate-800 hover:bg-slate-700 text-cyan-400 text-[10px] rounded font-bold uppercase font-mono"
+                            className="p-1 px-2 bg-emerald-600/10 hover:bg-emerald-600/20 text-emerald-600 dark:text-emerald-400 text-[10px] rounded font-bold uppercase font-mono transition-all"
+                            title="Tambah 10 stok otomatis"
                           >
-                            +10 {item.unit}
+                            +10
+                          </button>
+                          <button
+                            onClick={() => {
+                              setEditingInventoryItem(item);
+                              setInvName(item.name);
+                              setInvStock(item.stock);
+                              setInvUnit(item.unit);
+                              setInvMin(item.minStock);
+                              setInvCategory(item.category);
+                              setInvSupplier(item.supplier || '');
+                              setInvFormOpen(true);
+                            }}
+                            className="p-1 px-2 bg-blue-600/10 hover:bg-blue-600/20 text-blue-600 dark:text-cyan-400 text-[10px] rounded font-bold uppercase font-mono transition-all"
+                            title="Edit bahan baku"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (confirm(`Apakah Anda yakin ingin menghapus bahan baku "${item.name}"?`)) {
+                                const updated = inventory.filter(i => i.id !== item.id);
+                                onUpdateInventory(updated);
+                              }
+                            }}
+                            className="p-1 px-2 bg-red-600/10 hover:bg-red-600/20 text-red-600 dark:text-red-400 text-[10px] rounded font-bold uppercase font-mono transition-all"
+                            title="Hapus bahan baku"
+                          >
+                            Hapus
                           </button>
                         </td>
                       </tr>
@@ -1432,51 +1671,7 @@ export default function AdminDashboard({
             </div>
           )}
 
-          {/* ==============================================
-              VIEW 7: STAFF SHIFT SCHEDULES
-              ============================================== */}
-          {activeSidebarTab === 'employees' && (
-            <div className="space-y-6">
-              
-              <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                <div>
-                  <h3 className="text-xl font-extrabold tracking-tight text-white">Shift & Jadwal Kerja Tim Kulle</h3>
-                  <p className="text-xs text-slate-400">Konfigurasi peran kerja, log email operasional, dan linimasa giliran kerja (shift).</p>
-                </div>
 
-                <button
-                  id="add-employee-btn"
-                  onClick={() => setEmpFormOpen(true)}
-                  className="px-4 py-2 bg-[#0F52BA] text-white text-xs font-bold rounded-xl flex items-center gap-1.5"
-                >
-                  <Plus className="w-4 h-4" /> TAMBAH ANGGOTA STAF
-                </button>
-              </div>
-
-              {/* Grid lists */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {employees.map((emp) => (
-                  <div key={emp.id} className={`p-6 rounded-2xl border ${isDarkMode ? 'bg-[#0a142c] border-slate-800' : 'bg-white border-slate-100'}`}>
-                    <div className="flex items-center space-x-4">
-                      <img src={emp.avatar} alt={emp.name} className="w-12 h-12 rounded-full object-cover shrink-0" />
-                      <div>
-                        <h4 className="font-extrabold text-sm truncate">{emp.name}</h4>
-                        <span className="px-2 py-0.5 text-[8px] uppercase tracking-wider bg-[#0F52BA]/10 text-cyan-400 rounded-md font-bold">
-                          {emp.role === 'Barista' ? 'Barista' : emp.role === 'Chef' ? 'Chef' : emp.role === 'Waiter' ? 'Pramusaji' : emp.role === 'Cashier' ? 'Kasir' : emp.role}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="pt-4 mt-4 border-t border-slate-800/10 dark:border-slate-800/40 space-y-2 text-xs">
-                      <p className="text-slate-400 flex justify-between">Email: <span className="font-mono text-slate-300 truncate ml-2">{emp.email}</span></p>
-                      <p className="text-slate-400 flex justify-between font-sans">Jadwal Shift: <span className="font-bold text-slate-300 font-mono text-[10px]">{emp.shift}</span></p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-            </div>
-          )}
 
           {/* ==============================================
               VIEW 8: CAMPAIGN CODES (PROMOTIONS)
@@ -2654,45 +2849,50 @@ export default function AdminDashboard({
         )}
       </AnimatePresence>
 
-      {/* MODAL 4: CREATION INVENTORY INGREDIENT FORM */}
+      {/* MODAL 4: CREATION/EDIT INVENTORY INGREDIENT FORM */}
       <AnimatePresence>
         {invFormOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.5 }} exit={{ opacity: 0 }} onClick={() => setInvFormOpen(false)} className="absolute inset-0 bg-[#0A1F44]" />
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.5 }} exit={{ opacity: 0 }} onClick={() => { setInvFormOpen(false); setEditingInventoryItem(null); }} className="absolute inset-0 bg-[#0A1F44]" />
             <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} className={`relative max-w-sm w-full rounded-2xl border p-6 space-y-4 ${isDarkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-800'}`}>
               <div className="flex justify-between items-center pb-2 border-b border-inherit">
-                <h4 className="font-bold text-sm uppercase font-mono">Tambah Bahan Baku Baru</h4>
-                <button onClick={() => setInvFormOpen(false)} className="text-slate-450 hover:text-red-500 font-bold">✕</button>
+                <h4 className="font-bold text-sm uppercase font-mono">{editingInventoryItem ? 'Edit Bahan Baku' : 'Tambah Bahan Baku Baru'}</h4>
+                <button onClick={() => { setInvFormOpen(false); setEditingInventoryItem(null); }} className="text-slate-450 hover:text-red-500 font-bold">✕</button>
               </div>
 
               <form onSubmit={handleSaveInventory} className="space-y-4 text-xs">
                 <div className="space-y-1">
                   <label className="text-[10.5px] font-mono uppercase text-slate-400">Nama Bahan Baku</label>
-                  <input required type="text" value={invName} onChange={(e) => setInvName(e.target.value)} className="w-full p-2 text-white bg-slate-950 border border-slate-800 rounded" />
+                  <input required type="text" value={invName} onChange={(e) => setInvName(e.target.value)} className={`w-full p-2 rounded outline-none border ${isDarkMode ? 'text-white bg-slate-950 border-slate-800' : 'text-slate-800 bg-white border-slate-250'}`} />
                 </div>
 
                 <div className="grid grid-cols-3 gap-2">
                   <div>
                     <label className="text-[9.5px] font-mono uppercase text-slate-400">Stok Kuantitas</label>
-                    <input type="number" value={invStock} onChange={(e) => setInvStock(Number(e.target.value))} className="w-full p-2 text-white bg-slate-950 border border-slate-800 rounded" />
+                    <input type="number" value={invStock} onChange={(e) => setInvStock(Number(e.target.value))} className={`w-full p-2 rounded outline-none border ${isDarkMode ? 'text-white bg-slate-950 border-slate-800' : 'text-slate-800 bg-white border-slate-250'}`} />
                   </div>
                   <div>
                     <label className="text-[9.5px] font-mono uppercase text-slate-400">Satuan</label>
-                    <input type="text" value={invUnit} onChange={(e) => setInvUnit(e.target.value)} className="w-full p-2 text-white bg-slate-950 border border-slate-800 rounded" />
+                    <input type="text" value={invUnit} onChange={(e) => setInvUnit(e.target.value)} className={`w-full p-2 rounded outline-none border ${isDarkMode ? 'text-white bg-slate-950 border-slate-800' : 'text-slate-800 bg-white border-slate-250'}`} />
                   </div>
                   <div>
                     <label className="text-[9.5px] font-mono uppercase text-slate-400">Batas Minimum</label>
-                    <input type="number" value={invMin} onChange={(e) => setInvMin(Number(e.target.value))} className="w-full p-2 text-white bg-slate-950 border border-slate-800 rounded" />
+                    <input type="number" value={invMin} onChange={(e) => setInvMin(Number(e.target.value))} className={`w-full p-2 rounded outline-none border ${isDarkMode ? 'text-white bg-slate-950 border-slate-800' : 'text-slate-800 bg-white border-slate-250'}`} />
                   </div>
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[10.5px] font-mono uppercase text-slate-400">Nama Representative Supplier Utama</label>
-                  <input type="text" value={invSupplier} onChange={(e) => setInvSupplier(e.target.value)} className="w-full p-2 text-white bg-slate-950 border border-slate-800 rounded" />
+                  <label className="text-[10.5px] font-mono uppercase text-slate-400">Kategori Klasifikasi</label>
+                  <input type="text" value={invCategory} onChange={(e) => setInvCategory(e.target.value)} placeholder="contoh: Supplier Core, Camilan" className={`w-full p-2 rounded outline-none border ${isDarkMode ? 'text-white bg-slate-950 border-slate-800' : 'text-slate-800 bg-white border-slate-250'}`} />
                 </div>
 
-                <button type="submit" className="w-full py-2 bg-[#0F52BA] text-white font-bold rounded uppercase">
-                  Simpan Data Bahan Baku
+                <div className="space-y-1">
+                  <label className="text-[10.5px] font-mono uppercase text-slate-400">Nama Representative Supplier Utama</label>
+                  <input type="text" value={invSupplier} onChange={(e) => setInvSupplier(e.target.value)} className={`w-full p-2 rounded outline-none border ${isDarkMode ? 'text-white bg-slate-950 border-slate-800' : 'text-slate-800 bg-white border-slate-250'}`} />
+                </div>
+
+                <button type="submit" className="w-full py-2 bg-[#0F52BA] text-white font-bold rounded uppercase hover:brightness-110 transition-all">
+                  {editingInventoryItem ? 'Simpan Perubahan Bahan Baku' : 'Simpan Data Bahan Baku'}
                 </button>
               </form>
             </motion.div>

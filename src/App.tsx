@@ -18,11 +18,55 @@ import {
 } from './initialData';
 import LandingPage from './components/LandingPage';
 import AdminDashboard from './components/AdminDashboard';
-import { supabase } from './lib/supabaseClient';
+import { supabase } from './supabaseClient';
 
 export default function App() {
   // Portal View Router State ('customer' | 'admin')
-  const [view, setView] = useState<'customer' | 'admin'>('customer');
+  const [view, setView] = useState<'customer' | 'admin'>(() => {
+    if (window.location.pathname === '/login' || window.location.pathname === '/admin') {
+      return 'admin';
+    }
+    return 'customer';
+  });
+
+  // Custom router function that modifies window history state
+  const handleSetView = (newView: 'customer' | 'admin') => {
+    setView(newView);
+    if (newView === 'customer') {
+      if (window.location.pathname !== '/') {
+        window.history.pushState({}, '', '/');
+      }
+    } else {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (!session) {
+          if (window.location.pathname !== '/login') {
+            window.history.pushState({}, '', '/login');
+          }
+        } else {
+          if (window.location.pathname !== '/') {
+            window.history.pushState({}, '', '/');
+          }
+        }
+      }).catch(() => {
+        if (window.location.pathname !== '/login') {
+          window.history.pushState({}, '', '/login');
+        }
+      });
+    }
+  };
+
+  // Sync back and forward browser buttons
+  useEffect(() => {
+    const handlePopState = () => {
+      if (window.location.pathname === '/login' || window.location.pathname === '/admin') {
+        setView('admin');
+      } else {
+        setView('customer');
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
   
   // Dark mode visual state representation
   const [isDarkMode, setIsDarkMode] = useState<boolean>(true);
@@ -330,7 +374,7 @@ export default function App() {
           onPlaceOrder={handlePlaceOrder}
           isDarkMode={isDarkMode}
           toggleDarkMode={toggleDarkMode}
-          setView={setView}
+          setView={handleSetView}
         />
       ) : (
         <AdminDashboard 
@@ -353,7 +397,7 @@ export default function App() {
           onUpdateReviews={handleUpdateReviews}
           isDarkMode={isDarkMode}
           toggleDarkMode={toggleDarkMode}
-          setView={setView}
+          setView={handleSetView}
         />
       )}
     </div>
