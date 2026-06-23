@@ -29,6 +29,11 @@ export default function App() {
     return 'customer';
   });
 
+  const handleUpdateCustomers = (updated: Customer[]) => {
+    setCustomers(updated);
+    localStorage.setItem('kulle_customers', JSON.stringify(updated));
+  };
+
   // Custom router function that modifies window history state
   const handleSetView = (newView: 'customer' | 'admin') => {
     setView(newView);
@@ -389,6 +394,7 @@ export default function App() {
           reviews={reviews}
           onUpdateMenu={handleUpdateMenu}
           onUpdateOrders={handleUpdateOrders}
+          onUpdateCustomers={handleUpdateCustomers}
           onUpdateInventory={handleUpdateInventory}
           onUpdateEmployees={handleUpdateEmployees}
           onUpdatePromotions={handleUpdatePromotions}

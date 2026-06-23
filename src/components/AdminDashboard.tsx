@@ -35,6 +35,7 @@ interface AdminDashboardProps {
   reviews: Review[];
   onUpdateMenu: (updated: MenuItem[]) => void;
   onUpdateOrders: (updated: Order[]) => void;
+  onUpdateCustomers?: (updated: Customer[]) => void;
   onUpdateInventory: (updated: InventoryItem[]) => void;
   onUpdateEmployees: (updated: Employee[]) => void;
   onUpdatePromotions: (updated: Promotion[]) => void;
@@ -58,6 +59,7 @@ export default function AdminDashboard({
   reviews,
   onUpdateMenu,
   onUpdateOrders,
+  onUpdateCustomers,
   onUpdateInventory,
   onUpdateEmployees,
   onUpdatePromotions,
@@ -225,6 +227,17 @@ export default function AdminDashboard({
   const [reviewFormRating, setReviewFormRating] = useState(5);
   const [reviewFormDate, setReviewFormDate] = useState('');
   const [reviewFormAvatar, setReviewFormAvatar] = useState('');
+
+  // Customer Modification States
+  const [custFormOpen, setCustFormOpen] = useState(false);
+  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
+  const [custFormName, setCustFormName] = useState('');
+  const [custFormEmail, setCustFormEmail] = useState('');
+  const [custFormPhone, setCustFormPhone] = useState('');
+  const [custFormTotalOrders, setCustFormTotalOrders] = useState(0);
+  const [custFormTotalSpent, setCustFormTotalSpent] = useState(0);
+  const [custFormAvatar, setCustFormAvatar] = useState('');
+
 
   // Authentication validation
   const handleAuthSubmit = async (e: React.FormEvent) => {
@@ -694,6 +707,88 @@ export default function AdminDashboard({
     reader.readAsDataURL(file);
   };
 
+  const handleOpenAddCustomer = () => {
+    setEditingCustomer(null);
+    setCustFormName('');
+    setCustFormEmail('');
+    setCustFormPhone('');
+    setCustFormTotalOrders(0);
+    setCustFormTotalSpent(0);
+    setCustFormAvatar('https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80');
+    setCustFormOpen(true);
+  };
+
+  const handleOpenEditCustomer = (item: Customer) => {
+    setEditingCustomer(item);
+    setCustFormName(item.name);
+    setCustFormEmail(item.email);
+    setCustFormPhone(item.phone);
+    setCustFormTotalOrders(item.totalOrders);
+    setCustFormTotalSpent(item.totalSpent);
+    setCustFormAvatar(item.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80');
+    setCustFormOpen(true);
+  };
+
+  const handleSaveCustomer = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!custFormName || !custFormEmail) {
+      alert("Silakan isi nama dan email pelanggan terlebih dahulu.");
+      return;
+    }
+
+    if (editingCustomer) {
+      // Edit
+      const updatedList = customers.map((c) => 
+        c.id === editingCustomer.id 
+          ? { 
+              ...c, 
+              name: custFormName, 
+              email: custFormEmail, 
+              phone: custFormPhone, 
+              totalOrders: Number(custFormTotalOrders), 
+              totalSpent: Number(custFormTotalSpent), 
+              avatar: custFormAvatar 
+            } 
+          : c
+      );
+      if (onUpdateCustomers) {
+        onUpdateCustomers(updatedList);
+      }
+    } else {
+      // Create
+      const newItem: Customer = {
+        id: 'cust_' + Date.now(),
+        name: custFormName,
+        email: custFormEmail,
+        phone: custFormPhone,
+        totalOrders: Number(custFormTotalOrders) || 0,
+        totalSpent: Number(custFormTotalSpent) || 0,
+        avatar: custFormAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80',
+        lastOrder: new Date().toLocaleDateString('id-ID')
+      };
+      if (onUpdateCustomers) {
+        onUpdateCustomers([newItem, ...customers]);
+      }
+    }
+    setCustFormOpen(false);
+  };
+
+  const handleCustAvatarUploadChange = (file: File) => {
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      alert("Ukuran gambar avatar tidak boleh melebihi 2MB.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      if (typeof reader.result === 'string') {
+        setCustFormAvatar(reader.result);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+
   const handleHeroUploadChange = (file: File, slideIdx: number) => {
     if (!file) return;
     if (file.size > 4 * 1024 * 1024) {
@@ -1001,7 +1096,6 @@ export default function AdminDashboard({
               { id: 'customers', label: 'Data Pelanggan', icon: <Users className="w-4.5 h-4.5" /> },
               { id: 'analytics', label: 'Analitik Penjualan', icon: <BarChart3 className="w-4.5 h-4.5" /> },
               { id: 'inventory', label: 'Stok Bahan Baku', icon: <PackageOpen className="w-4.5 h-4.5" /> },
-              { id: 'promotions', label: 'Kode Promo & Diskon', icon: <Tag className="w-4.5 h-4.5" /> },
               { id: 'gallery', label: 'Edit Galeri', icon: <Image className="w-4.5 h-4.5" /> },
               { id: 'about_kulle', label: 'Tentang Kulle', icon: <Info className="w-4.5 h-4.5" /> },
               { id: 'reviews', label: 'Kelola Ulasan', icon: <MessageSquare className="w-4.5 h-4.5" /> },
@@ -1062,18 +1156,6 @@ export default function AdminDashboard({
 
           <div className="flex items-center space-x-6">
             
-            {/* Quick Global Search */}
-            <div className="relative hidden md:block">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
-              <input
-                type="text"
-                placeholder={`Cari di ${getTabTitle(activeSidebarTab).toLowerCase()}...`}
-                value={dashSearchInput}
-                onChange={(e) => setDashSearchInput(e.target.value)}
-                className={`pl-9 pr-4 py-2 text-xs rounded-xl border outline-none ${isDarkMode ? 'bg-slate-900 border-slate-800 text-white focus:border-cyan-500' : 'bg-slate-50 border-slate-200 text-slate-800'}`}
-              />
-            </div>
-
             {/* In-app visual theme toggle */}
             <button 
               onClick={toggleDarkMode}
@@ -1451,9 +1533,17 @@ export default function AdminDashboard({
           {activeSidebarTab === 'customers' && (
             <div className="space-y-6">
               
-              <div>
-                <h3 className="text-xl font-extrabold tracking-tight text-white">Daftar Pelanggan Terdaftar Kulle</h3>
-                <p className="text-xs text-slate-400">Daftar riwayat checkout akun premium beserta total pengeluaran transaksi kuliner.</p>
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                  <h3 className="text-xl font-extrabold tracking-tight text-white">Daftar Pelanggan Terdaftar Kulle</h3>
+                  <p className="text-xs text-slate-400">Daftar riwayat checkout akun premium beserta total pengeluaran transaksi kuliner.</p>
+                </div>
+                <button
+                  onClick={handleOpenAddCustomer}
+                  className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold rounded-xl flex items-center gap-2 shadow-lg shadow-blue-500/20 cursor-pointer self-start md:self-auto transition-all"
+                >
+                  <Plus className="w-4 h-4" /> TAMBAH PELANGGAN
+                </button>
               </div>
 
               {/* Grid cards */}
@@ -1479,6 +1569,27 @@ export default function AdminDashboard({
                         <p className="text-slate-400 text-[9px] uppercase font-mono">Total Transaksi</p>
                         <p className="font-bold text-emerald-500 font-mono mt-1">Rp {c.totalSpent.toLocaleString('id')}</p>
                       </div>
+                    </div>
+
+                    <div className="w-full pt-3 mt-2 border-t border-slate-800/10 dark:border-slate-800/40 flex gap-2">
+                      <button
+                        onClick={() => handleOpenEditCustomer(c)}
+                        className="flex-1 py-1.5 text-[10px] font-bold text-[#0F52BA] hover:text-white bg-[#0F52BA]/10 hover:bg-[#0F52BA] rounded-lg flex items-center justify-center gap-1 transition-all cursor-pointer"
+                        title="Edit Pelanggan"
+                      >
+                        <Edit className="w-3 h-3" /> EDIT
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (onUpdateCustomers && confirm(`Apakah Anda yakin ingin menghapus pelanggan "${c.name}"?`)) {
+                            onUpdateCustomers(customers.filter((cust) => cust.id !== c.id));
+                          }
+                        }}
+                        className="flex-1 py-1.5 text-[10px] font-bold text-red-500 hover:text-white bg-red-500/10 hover:bg-red-500 rounded-lg flex items-center justify-center gap-1 transition-all cursor-pointer"
+                        title="Hapus Pelanggan"
+                      >
+                        <Trash2 className="w-3 h-3" /> HAPUS
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -2101,11 +2212,6 @@ export default function AdminDashboard({
 
                 <div className="p-5 rounded-2xl border border-slate-800/60 dark:border-slate-800 bg-slate-900/10 space-y-4">
                   <div className="flex flex-col md:flex-row gap-6 items-start md:items-center justify-between">
-                    <div>
-                      <h4 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-slate-200">Ikon Favicon Website</h4>
-                      <p className="text-[11px] text-slate-400 mt-0.5">Atur logo kecil yang muncul di tab browser Anda dan penanda situs.</p>
-                    </div>
-
                     <div className="w-full md:w-auto flex flex-wrap items-center gap-4">
                       {/* High-Resolution Zoomed Favicon Detail */}
                       <div className="flex flex-col items-center justify-center p-3 rounded-xl bg-slate-950/40 border border-slate-800/60 dark:bg-slate-950/80">
@@ -2218,13 +2324,6 @@ export default function AdminDashboard({
                         )}
                       </div>
                       <div className="space-y-2">
-                        <input
-                          type="text"
-                          placeholder="Nilai URL Web Gambar..."
-                          value={settingsHero1}
-                          onChange={(e) => setSettingsHero1(e.target.value)}
-                          className={`w-full p-2 text-[11px] rounded border outline-none ${isDarkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-800'}`}
-                        />
                         <div className="flex items-center gap-1.5">
                           <label className={`flex-grow flex items-center justify-center border border-dashed rounded p-1.5 text-[10px] font-semibold cursor-pointer transition-all ${isDarkMode ? 'bg-slate-900 border-slate-700 hover:border-blue-500 text-slate-400 hover:text-white' : 'bg-white border-slate-200 hover:border-blue-500 text-slate-600'}`}>
                             <span>📂 Upload</span>
@@ -2264,13 +2363,6 @@ export default function AdminDashboard({
                         <img src={settingsHero2 || heroImg2} className="w-full h-full object-cover" alt="Hero 2 Preview" />
                       </div>
                       <div className="space-y-2">
-                        <input
-                          type="text"
-                          placeholder="Nilai URL Web Gambar..."
-                          value={settingsHero2}
-                          onChange={(e) => setSettingsHero2(e.target.value)}
-                          className={`w-full p-2 text-[11px] rounded border outline-none ${isDarkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-800'}`}
-                        />
                         <div className="flex items-center gap-1.5">
                           <label className={`flex-grow flex items-center justify-center border border-dashed rounded p-1.5 text-[10px] font-semibold cursor-pointer transition-all ${isDarkMode ? 'bg-slate-900 border-slate-700 hover:border-blue-500 text-slate-400 hover:text-white' : 'bg-white border-slate-200 hover:border-blue-500 text-slate-600'}`}>
                             <span>📂 Upload</span>
@@ -2310,13 +2402,6 @@ export default function AdminDashboard({
                         <img src={settingsHero3 || heroImg3} className="w-full h-full object-cover" alt="Hero 3 Preview" />
                       </div>
                       <div className="space-y-2">
-                        <input
-                          type="text"
-                          placeholder="Nilai URL Web Gambar..."
-                          value={settingsHero3}
-                          onChange={(e) => setSettingsHero3(e.target.value)}
-                          className={`w-full p-2 text-[11px] rounded border outline-none ${isDarkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-800'}`}
-                        />
                         <div className="flex items-center gap-1.5">
                           <label className={`flex-grow flex items-center justify-center border border-dashed rounded p-1.5 text-[10px] font-semibold cursor-pointer transition-all ${isDarkMode ? 'bg-slate-900 border-slate-700 hover:border-blue-500 text-slate-400 hover:text-white' : 'bg-white border-slate-200 hover:border-blue-500 text-slate-600'}`}>
                             <span>📂 Upload</span>
@@ -2356,13 +2441,6 @@ export default function AdminDashboard({
                         <img src={settingsHero4 || heroImg4} className="w-full h-full object-cover" alt="Hero 4 Preview" />
                       </div>
                       <div className="space-y-2">
-                        <input
-                          type="text"
-                          placeholder="Nilai URL Web Gambar..."
-                          value={settingsHero4}
-                          onChange={(e) => setSettingsHero4(e.target.value)}
-                          className={`w-full p-2 text-[11px] rounded border outline-none ${isDarkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-800'}`}
-                        />
                         <div className="flex items-center gap-1.5">
                           <label className={`flex-grow flex items-center justify-center border border-dashed rounded p-1.5 text-[10px] font-semibold cursor-pointer transition-all ${isDarkMode ? 'bg-slate-900 border-slate-700 hover:border-blue-500 text-slate-400 hover:text-white' : 'bg-white border-slate-200 hover:border-blue-500 text-slate-600'}`}>
                             <span>📂 Upload</span>
@@ -3081,6 +3159,100 @@ export default function AdminDashboard({
           </div>
         )}
       </AnimatePresence>
+
+      {/* MODAL 8: ADD / EDIT CUSTOMERS SPECIFICS */}
+      <AnimatePresence>
+        {custFormOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.5 }} exit={{ opacity: 0 }} onClick={() => setCustFormOpen(false)} className="absolute inset-0 bg-[#0A1F44]/50 backdrop-blur-sm" />
+            <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} className={`relative max-w-sm w-full rounded-2xl border p-6 space-y-4 ${isDarkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-800'}`}>
+              <div className="flex justify-between items-center pb-2 border-b border-inherit">
+                <h4 className="font-bold text-sm uppercase font-mono">{editingCustomer ? 'Edit Data Pelanggan' : 'Daftar Pelanggan Baru'}</h4>
+                <button onClick={() => setCustFormOpen(false)} className="text-slate-400 hover:text-red-500 font-bold">✕</button>
+              </div>
+
+              <form onSubmit={handleSaveCustomer} className="space-y-4 text-xs">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-mono uppercase text-slate-400">Nama Lengkap</label>
+                  <input required type="text" value={custFormName} onChange={(e) => setCustFormName(e.target.value)} className={`w-full p-2.5 rounded-xl border outline-none ${isDarkMode ? 'bg-slate-950 border-slate-800 text-white focus:border-cyan-400' : 'bg-slate-50 border-slate-200 text-slate-800 focus:border-[#0F52BA]'}`} placeholder="Contoh: Budi Santoso" />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-mono uppercase text-slate-400">Alamat Email</label>
+                  <input required type="email" value={custFormEmail} onChange={(e) => setCustFormEmail(e.target.value)} className={`w-full p-2.5 rounded-xl border outline-none ${isDarkMode ? 'bg-slate-950 border-slate-800 text-white focus:border-cyan-400' : 'bg-slate-50 border-slate-200 text-slate-800 focus:border-[#0F52BA]'}`} placeholder="Contoh: budi@gmail.com" />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-mono uppercase text-slate-400">No. Telepon / WhatsApp</label>
+                  <input required type="text" value={custFormPhone} onChange={(e) => setCustFormPhone(e.target.value)} className={`w-full p-2.5 rounded-xl border outline-none ${isDarkMode ? 'bg-slate-950 border-slate-800 text-white focus:border-cyan-400' : 'bg-slate-50 border-slate-200 text-slate-800 focus:border-[#0F52BA]'}`} placeholder="Contoh: 08123456789" />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-mono uppercase text-slate-400">Total Pesanan</label>
+                    <input type="number" min="0" value={custFormTotalOrders} onChange={(e) => setCustFormTotalOrders(Number(e.target.value))} className={`w-full p-2.5 rounded-xl border outline-none ${isDarkMode ? 'bg-slate-950 border-slate-800 text-white focus:border-cyan-400' : 'bg-slate-50 border-slate-200 text-slate-800 focus:border-[#0F52BA]'}`} />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-mono uppercase text-slate-400">Total Pengeluaran (Rp)</label>
+                    <input type="number" min="0" value={custFormTotalSpent} onChange={(e) => setCustFormTotalSpent(Number(e.target.value))} className={`w-full p-2.5 rounded-xl border outline-none ${isDarkMode ? 'bg-slate-950 border-slate-800 text-white focus:border-cyan-400' : 'bg-slate-50 border-slate-200 text-slate-800 focus:border-[#0F52BA]'}`} />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-mono uppercase text-slate-400">Foto Profil / Avatar</label>
+                  <div className="flex items-center gap-3">
+                    <img src={custFormAvatar} alt="Avatar Preview" className="w-10 h-10 rounded-full object-cover border border-slate-700 bg-slate-950" />
+                    <div className="flex-1 flex flex-col gap-1">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        id="custAvatarFileInput"
+                        onChange={(e) => {
+                          if (e.target.files && e.target.files[0]) {
+                            handleCustAvatarUploadChange(e.target.files[0]);
+                          }
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => document.getElementById('custAvatarFileInput')?.click()}
+                        className="px-3 py-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-500 text-[10px] font-bold uppercase tracking-wider text-left w-fit transition-all cursor-pointer"
+                      >
+                        Unggah Foto
+                      </button>
+                    </div>
+                  </div>
+                  <input
+                    type="text"
+                    value={custFormAvatar}
+                    onChange={(e) => setCustFormAvatar(e.target.value)}
+                    placeholder="Atau masukkan tautan URL foto..."
+                    className={`w-full p-2.5 mt-1 rounded-xl border text-[10px] outline-none ${isDarkMode ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-600 focus:border-cyan-400' : 'bg-slate-50 border-slate-200 placeholder-slate-400 focus:border-[#0F52BA]'}`}
+                  />
+                </div>
+
+                <div className="pt-2 flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setCustFormOpen(false)}
+                    className={`flex-1 py-3 rounded-xl font-bold transition-all text-center cursor-pointer ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
+                  >
+                    BATAL
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 py-3 bg-gradient-to-r from-[#0F52BA] to-blue-500 font-bold text-white rounded-xl shadow shadow-blue-500/25 cursor-pointer"
+                  >
+                    SIMPAN
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
 
     </div>
   );
