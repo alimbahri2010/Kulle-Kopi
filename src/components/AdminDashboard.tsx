@@ -143,6 +143,7 @@ export default function AdminDashboard({
   const [settingsHero2, setSettingsHero2] = useState(settings.heroImageUrl2 || '');
   const [settingsHero3, setSettingsHero3] = useState(settings.heroImageUrl3 || '');
   const [settingsHero4, setSettingsHero4] = useState(settings.heroImageUrl4 || '');
+  const [settingsDisableOrderButtons, setSettingsDisableOrderButtons] = useState(settings.disableOrderButtons || false);
   const [settingsSavedSuccess, setSettingsSavedSuccess] = useState(false);
 
   // Tentang Kulle states
@@ -401,6 +402,7 @@ export default function AdminDashboard({
       heroImageUrl2: settingsHero2,
       heroImageUrl3: settingsHero3,
       heroImageUrl4: settingsHero4,
+      disableOrderButtons: settingsDisableOrderButtons,
       themeColor: '#0F52BA'
     });
     setSettingsSavedSuccess(true);
@@ -631,7 +633,7 @@ export default function AdminDashboard({
             <form onSubmit={handleForgotPassword} className="space-y-6">
               <div className="text-center space-y-2">
                 <span className="text-3xl">☕</span>
-                <h3 className="text-xl font-extrabold">Reset Admin Password</h3>
+                <h3 className="text-xl font-extrabold text-white">Reset Admin Password</h3>
                 <p className="text-xs text-slate-400">Provide authorization username linked to Kulle administration logs.</p>
               </div>
 
@@ -968,7 +970,7 @@ export default function AdminDashboard({
                 <div className={`lg:col-span-2 p-6 rounded-2xl border flex flex-col justify-between ${isDarkMode ? 'bg-[#0a142c] border-[#0F52BA]/15' : 'bg-white border-slate-100 shadow-sm'}`}>
                   <div className="flex justify-between items-center mb-6">
                     <div>
-                      <h3 className="font-extrabold text-base tracking-tight">Tren Pendapatan Harian Kulle</h3>
+                      <h3 className="font-extrabold text-base tracking-tight text-white">Tren Pendapatan Harian Kulle</h3>
                       <p className="text-[10px] text-slate-400 uppercase tracking-widest font-mono">Simulator metrik penjualan operasional dalam 7 jam aktif terakhir</p>
                     </div>
                     <span className="px-2.5 py-1 text-[10px] font-bold bg-emerald-500/10 text-emerald-500 rounded-lg">KALKULASI LANGSUNG (LIVE)</span>
@@ -1037,7 +1039,7 @@ export default function AdminDashboard({
                 {/* Operations side activity feed */}
                 <div className={`p-6 rounded-2xl border flex flex-col justify-between ${isDarkMode ? 'bg-[#0a142c] border-[#0F52BA]/15' : 'bg-white border-slate-100 shadow-sm'}`}>
                   <div>
-                    <h3 className="font-extrabold text-base tracking-tight mb-4 text-slate-900 dark:text-slate-100">Catatan Aktivitas Operasional</h3>
+                    <h3 className="font-extrabold text-base tracking-tight mb-4 text-white">Catatan Aktivitas Operasional</h3>
                     <div className="space-y-4">
                       {orders.map((ord, idx) => (
                         <div key={ord.id} className="flex gap-3 text-xs border-b border-slate-800/10 pb-3 last:border-0 last:pb-0">
@@ -1071,7 +1073,7 @@ export default function AdminDashboard({
             <div className="space-y-6">
               <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
                 <div>
-                  <h3 className="text-xl font-extrabold tracking-tight">Daftar Menu Kopi & Makanan Kulle</h3>
+                  <h3 className="text-xl font-extrabold tracking-tight text-white">Daftar Menu Kopi & Makanan Kulle</h3>
                   <p className="text-xs text-slate-400">Daftar lengkap katalog kuliner yang diterbitkan ke halaman utama secara real-time.</p>
                 </div>
                 
@@ -1149,7 +1151,7 @@ export default function AdminDashboard({
             <div className="space-y-6">
               
               <div>
-                <h3 className="text-xl font-extrabold tracking-tight text-slate-905 dark:text-white">Kelola & Proses Pesanan Pelanggan</h3>
+                <h3 className="text-xl font-extrabold tracking-tight text-white">Kelola & Proses Pesanan Pelanggan</h3>
                 <p className="text-xs text-slate-400">Tandai pesanan sebagai sedang diproses, selesai, atau cetak struk pembayaran asli untuk kasir.</p>
               </div>
 
@@ -1240,7 +1242,7 @@ export default function AdminDashboard({
             <div className="space-y-6">
               
               <div>
-                <h3 className="text-xl font-extrabold tracking-tight">Daftar Pelanggan Terdaftar Kulle</h3>
+                <h3 className="text-xl font-extrabold tracking-tight text-white">Daftar Pelanggan Terdaftar Kulle</h3>
                 <p className="text-xs text-slate-400">Daftar riwayat checkout akun premium beserta total pengeluaran transaksi kuliner.</p>
               </div>
 
@@ -1282,7 +1284,7 @@ export default function AdminDashboard({
             <div className="space-y-8">
               
               <div>
-                <h3 className="text-xl font-extrabold tracking-tight">Tren Analitik Penjualan Kulle</h3>
+                <h3 className="text-xl font-extrabold tracking-tight text-white">Tren Analitik Penjualan Kulle</h3>
                 <p className="text-xs text-slate-400">Representasi visual kinerja menu kuliner, produk terlaris, dan jam layanan puncak.</p>
               </div>
 
@@ -1370,7 +1372,7 @@ export default function AdminDashboard({
               
               <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
                 <div>
-                  <h3 className="text-xl font-extrabold tracking-tight">Stok Persediaan Bahan Baku Kulle</h3>
+                  <h3 className="text-xl font-extrabold tracking-tight text-white">Stok Persediaan Bahan Baku Kulle</h3>
                   <p className="text-xs text-slate-400">Daftar bahan baku, jumlah persediaan, dan batas minimum stok.</p>
                 </div>
 
@@ -1438,7 +1440,7 @@ export default function AdminDashboard({
               
               <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
                 <div>
-                  <h3 className="text-xl font-extrabold tracking-tight">Shift & Jadwal Kerja Tim Kulle</h3>
+                  <h3 className="text-xl font-extrabold tracking-tight text-white">Shift & Jadwal Kerja Tim Kulle</h3>
                   <p className="text-xs text-slate-400">Konfigurasi peran kerja, log email operasional, dan linimasa giliran kerja (shift).</p>
                 </div>
 
@@ -1484,7 +1486,7 @@ export default function AdminDashboard({
               
               <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
                 <div>
-                  <h3 className="text-xl font-extrabold tracking-tight">Promo & Kupon Diskon Interaktif</h3>
+                  <h3 className="text-xl font-extrabold tracking-tight text-white">Promo & Kupon Diskon Interaktif</h3>
                   <p className="text-xs text-slate-400">Kode diskon, deskripsi promo, dan status kampanye yang diterbitkan di beranda.</p>
                 </div>
 
@@ -1536,7 +1538,7 @@ export default function AdminDashboard({
             <div className="max-w-2xl">
               
               <div className="mb-6">
-                <h3 className="text-xl font-extrabold tracking-tight text-slate-900 dark:text-white">Edit Tentang Kulle</h3>
+                <h3 className="text-xl font-extrabold tracking-tight text-white">Edit Tentang Kulle</h3>
                 <p className="text-xs text-slate-400">Sesuaikan cerita, judul utama, deskripsi paragraf, dan dua kartu fitur pada bagian Tentang Kulle.</p>
               </div>
 
@@ -1651,7 +1653,7 @@ export default function AdminDashboard({
               
               <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
                 <div>
-                  <h3 className="text-xl font-extrabold tracking-tight text-[#0F52BA] dark:text-cyan-400">Kelola Ulasan & Klien Kulle</h3>
+                  <h3 className="text-xl font-extrabold tracking-tight text-white">Kelola Ulasan & Klien Kulle</h3>
                   <p className="text-xs text-slate-400">Tambah, ubah, atau hapus ulasan loyal pelanggan yang tampil di bagian testimoni landing page.</p>
                 </div>
 
@@ -1787,7 +1789,7 @@ export default function AdminDashboard({
             <div className="max-w-2xl">
               
               <div className="mb-6">
-                <h3 className="text-xl font-extrabold tracking-tight text-slate-900 dark:text-white">Pengaturan Utama Kulle Cafe</h3>
+                <h3 className="text-xl font-extrabold tracking-tight text-white">Pengaturan Utama Kulle Cafe</h3>
                 <p className="text-xs text-slate-400">Perbarui alamat, jam operasional, nomor WhatsApp, dan slogan brand secara instan.</p>
               </div>
 
@@ -1870,6 +1872,35 @@ export default function AdminDashboard({
                       onChange={(e) => setSettingsHours(e.target.value)}
                       className={`w-full p-2.5 text-xs rounded-lg border outline-none ${isDarkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-850'}`}
                     />
+                  </div>
+                </div>
+
+                {/* -----------------------------------------------
+                    TOMBOL TAMBAH PESANAN (ENABLE/DISABLE CONFIGURATION)
+                    ----------------------------------------------- */}
+                <div id="booking-feature-admin-card" className={`p-5 rounded-2xl border ${isDarkMode ? 'border-slate-800 bg-slate-900/10' : 'border-slate-100 bg-slate-50'} space-y-4`}>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                      <h4 className={`text-xs font-black uppercase tracking-wider ${isDarkMode ? 'text-slate-200' : 'text-slate-700'}`}>Fitur Pemesanan Pelanggan</h4>
+                      <p className="text-[11px] text-slate-400 mt-0.5">Sembunyikan atau aktifkan tombol "Tambah Pesanan" di menu reguler landing page.</p>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setSettingsDisableOrderButtons(false)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${!settingsDisableOrderButtons ? 'bg-emerald-600 border-emerald-600 text-white' : (isDarkMode ? 'border-slate-700 text-slate-400 hover:text-white hover:border-slate-600' : 'border-slate-200 text-slate-600 hover:bg-slate-100')}`}
+                      >
+                        Aktif (Tampil)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSettingsDisableOrderButtons(true)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${settingsDisableOrderButtons ? 'bg-red-650 border-red-600 text-white bg-red-600' : (isDarkMode ? 'border-slate-700 text-slate-400 hover:text-white hover:border-slate-600' : 'border-slate-200 text-slate-600 hover:bg-slate-100')}`}
+                      >
+                        Nonaktif (Sembunyikan)
+                      </button>
+                    </div>
                   </div>
                 </div>
 
@@ -1966,6 +1997,210 @@ export default function AdminDashboard({
 
 
 
+                {/* -----------------------------------------------
+                    HERO CAROUSEL IMAGES (4 SLOT CONFIGURATION)
+                    ----------------------------------------------- */}
+                <div className="p-6 rounded-2xl border border-slate-800/60 dark:border-slate-800 bg-slate-900/10 space-y-6">
+                  <div>
+                    <h4 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-slate-200">Foto Hero Banner (Carousel Slideshow)</h4>
+                    <p className="text-[11px] text-slate-400 mt-0.5">Atur 4 gambar utama yang berganti otomatis di bagian atas beranda landing page.</p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Slot 1 */}
+                    <div className="p-4 rounded-xl bg-slate-950/40 border border-slate-800/60 space-y-3">
+                      <div className="flex justify-between items-center pb-2 border-b border-white/5">
+                        <span className="text-[10px] font-mono uppercase tracking-wider text-[#0F52BA] dark:text-cyan-400 font-bold">Slot Foto 1 (Utama)</span>
+                        <span className="text-[9px] font-mono text-slate-500">Image #1</span>
+                      </div>
+                      <div className="relative aspect-video rounded-lg overflow-hidden border border-slate-800 bg-slate-900/60 group">
+                        {settingsHero1 ? (
+                          <img src={settingsHero1} className="w-full h-full object-cover" alt="Hero 1 Preview" />
+                        ) : (
+                          <div className="w-full h-full flex flex-col items-center justify-center text-slate-500 text-[10px] p-3 text-center">
+                            <span>Membuka default Unsplash Rasa Kopi</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="space-y-2">
+                        <input
+                          type="text"
+                          placeholder="Nilai URL Web Gambar..."
+                          value={settingsHero1}
+                          onChange={(e) => setSettingsHero1(e.target.value)}
+                          className={`w-full p-2 text-[11px] rounded border outline-none ${isDarkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-800'}`}
+                        />
+                        <div className="flex items-center gap-1.5">
+                          <label className={`flex-grow flex items-center justify-center border border-dashed rounded p-1.5 text-[10px] font-semibold cursor-pointer transition-all ${isDarkMode ? 'bg-slate-900 border-slate-700 hover:border-blue-500 text-slate-400 hover:text-white' : 'bg-white border-slate-200 hover:border-blue-500 text-slate-600'}`}>
+                            <span>📂 Upload</span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                const reader = new FileReader();
+                                reader.onloadend = () => {
+                                  if (typeof reader.result === 'string') setSettingsHero1(reader.result);
+                                };
+                                reader.readAsDataURL(file);
+                              }}
+                            />
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() => setSettingsHero1('')}
+                            className="px-2.5 py-1.5 text-[10px] font-semibold bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded border border-red-500/20 transition-all"
+                          >
+                            Reset
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Slot 2 */}
+                    <div className="p-4 rounded-xl bg-slate-950/40 border border-slate-800/60 space-y-3">
+                      <div className="flex justify-between items-center pb-2 border-b border-white/5">
+                        <span className="text-[10px] font-mono uppercase tracking-wider text-[#0F52BA] dark:text-cyan-400 font-bold">Slot Foto 2</span>
+                        <span className="text-[9px] font-mono text-slate-500">Image #2</span>
+                      </div>
+                      <div className="relative aspect-video rounded-lg overflow-hidden border border-slate-800 bg-slate-900/60 group">
+                        <img src={settingsHero2 || heroImg2} className="w-full h-full object-cover" alt="Hero 2 Preview" />
+                      </div>
+                      <div className="space-y-2">
+                        <input
+                          type="text"
+                          placeholder="Nilai URL Web Gambar..."
+                          value={settingsHero2}
+                          onChange={(e) => setSettingsHero2(e.target.value)}
+                          className={`w-full p-2 text-[11px] rounded border outline-none ${isDarkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-800'}`}
+                        />
+                        <div className="flex items-center gap-1.5">
+                          <label className={`flex-grow flex items-center justify-center border border-dashed rounded p-1.5 text-[10px] font-semibold cursor-pointer transition-all ${isDarkMode ? 'bg-slate-900 border-slate-700 hover:border-blue-500 text-slate-400 hover:text-white' : 'bg-white border-slate-200 hover:border-blue-500 text-slate-600'}`}>
+                            <span>📂 Upload</span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                const reader = new FileReader();
+                                reader.onloadend = () => {
+                                  if (typeof reader.result === 'string') setSettingsHero2(reader.result);
+                                };
+                                reader.readAsDataURL(file);
+                              }}
+                            />
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() => setSettingsHero2('')}
+                            className="px-2.5 py-1.5 text-[10px] font-semibold bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded border border-red-500/20 transition-all"
+                          >
+                            Reset
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Slot 3 */}
+                    <div className="p-4 rounded-xl bg-slate-950/40 border border-slate-800/60 space-y-3">
+                      <div className="flex justify-between items-center pb-2 border-b border-white/5">
+                        <span className="text-[10px] font-mono uppercase tracking-wider text-[#0F52BA] dark:text-cyan-400 font-bold">Slot Foto 3</span>
+                        <span className="text-[9px] font-mono text-slate-500">Image #3</span>
+                      </div>
+                      <div className="relative aspect-video rounded-lg overflow-hidden border border-slate-800 bg-slate-900/60 group">
+                        <img src={settingsHero3 || heroImg3} className="w-full h-full object-cover" alt="Hero 3 Preview" />
+                      </div>
+                      <div className="space-y-2">
+                        <input
+                          type="text"
+                          placeholder="Nilai URL Web Gambar..."
+                          value={settingsHero3}
+                          onChange={(e) => setSettingsHero3(e.target.value)}
+                          className={`w-full p-2 text-[11px] rounded border outline-none ${isDarkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-800'}`}
+                        />
+                        <div className="flex items-center gap-1.5">
+                          <label className={`flex-grow flex items-center justify-center border border-dashed rounded p-1.5 text-[10px] font-semibold cursor-pointer transition-all ${isDarkMode ? 'bg-slate-900 border-slate-700 hover:border-blue-500 text-slate-400 hover:text-white' : 'bg-white border-slate-200 hover:border-blue-500 text-slate-600'}`}>
+                            <span>📂 Upload</span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                const reader = new FileReader();
+                                reader.onloadend = () => {
+                                  if (typeof reader.result === 'string') setSettingsHero3(reader.result);
+                                };
+                                reader.readAsDataURL(file);
+                              }}
+                            />
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() => setSettingsHero3('')}
+                            className="px-2.5 py-1.5 text-[10px] font-semibold bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded border border-red-500/20 transition-all"
+                          >
+                            Reset
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Slot 4 */}
+                    <div className="p-4 rounded-xl bg-slate-950/40 border border-slate-800/60 space-y-3">
+                      <div className="flex justify-between items-center pb-2 border-b border-white/5">
+                        <span className="text-[10px] font-mono uppercase tracking-wider text-[#0F52BA] dark:text-cyan-400 font-bold">Slot Foto 4</span>
+                        <span className="text-[9px] font-mono text-slate-500">Image #4</span>
+                      </div>
+                      <div className="relative aspect-video rounded-lg overflow-hidden border border-slate-800 bg-slate-900/60 group">
+                        <img src={settingsHero4 || heroImg4} className="w-full h-full object-cover" alt="Hero 4 Preview" />
+                      </div>
+                      <div className="space-y-2">
+                        <input
+                          type="text"
+                          placeholder="Nilai URL Web Gambar..."
+                          value={settingsHero4}
+                          onChange={(e) => setSettingsHero4(e.target.value)}
+                          className={`w-full p-2 text-[11px] rounded border outline-none ${isDarkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-800'}`}
+                        />
+                        <div className="flex items-center gap-1.5">
+                          <label className={`flex-grow flex items-center justify-center border border-dashed rounded p-1.5 text-[10px] font-semibold cursor-pointer transition-all ${isDarkMode ? 'bg-slate-900 border-slate-700 hover:border-blue-500 text-slate-400 hover:text-white' : 'bg-white border-slate-200 hover:border-blue-500 text-slate-600'}`}>
+                            <span>📂 Upload</span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                const reader = new FileReader();
+                                reader.onloadend = () => {
+                                  if (typeof reader.result === 'string') setSettingsHero4(reader.result);
+                                };
+                                reader.readAsDataURL(file);
+                              }}
+                            />
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() => setSettingsHero4('')}
+                            className="px-2.5 py-1.5 text-[10px] font-semibold bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded border border-red-500/20 transition-all"
+                          >
+                            Reset
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+
+
                 <div className="pt-2">
                   <button
                     type="submit"
@@ -1991,7 +2226,7 @@ export default function AdminDashboard({
               
               <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
                 <div>
-                  <h3 className="text-xl font-extrabold tracking-tight text-slate-900 dark:text-white">Galeri & Foto Kulle Kopi</h3>
+                  <h3 className="text-xl font-extrabold tracking-tight text-white">Galeri & Foto Kulle Kopi</h3>
                   <p className="text-xs text-slate-400">Atur foto interior, suasana seduh, kopi, dan kuliner untuk ditampilkan di landing page.</p>
                 </div>
 

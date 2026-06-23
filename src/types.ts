@@ -115,6 +115,7 @@ export interface CafeSettings {
   heroImageUrl2?: string;
   heroImageUrl3?: string;
   heroImageUrl4?: string;
+  disableOrderButtons?: boolean;
 }
 
 export interface GalleryItem {

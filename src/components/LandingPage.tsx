@@ -20,6 +20,8 @@ import heroImg2 from '../assets/images/regenerated_image_1781558986012.jpg';
 import heroImg3 from '../assets/images/regenerated_image_1781558820689.jpg';
 // @ts-ignore
 import heroImg4 from '../assets/images/regenerated_image_1781558991574.jpg';
+// @ts-ignore
+import aboutImg from '../assets/images/regenerated_image_1782204336376.jpg';
 
 const HERO_IMAGES = [
   'https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=1920&q=80',
@@ -253,7 +255,7 @@ export default function LandingPage({
                   src={logoImg} 
                   alt="Kulle Kopi Logo" 
                   className="w-full h-full object-contain transition-all"
-                  style={!isDarkMode ? { filter: 'brightness(0) saturate(100%) invert(21%) sepia(87%) saturate(3062%) hue-rotate(212deg) brightness(94%) contrast(101%)' } : {}}
+                  style={!isDarkMode ? { filter: 'brightness(0) saturate(100%) invert(21%) sepia(87%) saturate(3062%) hue-rotate(212deg) brightness(94%) contrast(101%)', borderColor: '#ffffff', borderStyle: 'none' } : { borderColor: '#ffffff', borderStyle: 'none' }}
                   referrerPolicy="no-referrer"
                 />
               </div>
@@ -557,9 +559,9 @@ export default function LandingPage({
             {/* Split layout - Right side */}
             <div className="lg:col-span-5 relative">
               <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full bg-blue-500/10 dark:bg-blue-900/10 blur-3xl" />
-              <div className="relative rounded-2xl overflow-hidden shadow-2xl skew-y-1 hover:skew-y-0 transition-transform duration-500 border border-slate-200 dark:border-slate-800">
+              <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-800">
                 <img 
-                  src="https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=700&q=80" 
+                  src={aboutImg} 
                   alt="Kulle Kopi Lounge Interior" 
                   className="w-full h-[450px] object-cover"
                   referrerPolicy="no-referrer"
@@ -594,7 +596,7 @@ export default function LandingPage({
             <span className="text-xs uppercase font-mono tracking-widest text-[#0F52BA] dark:text-cyan-400 font-bold tracking-[0.2em]">
               Menu yang Dikreasikan Sempurna
             </span>
-            <h2 className="text-3xl sm:text-6xl font-light font-serif tracking-tight text-white">
+            <h2 className="text-3xl sm:text-6xl font-light font-serif tracking-tight text-black dark:text-white">
               Kreasi <span className="font-serif font-bold italic text-[#0F52BA] dark:text-cyan-400">Kuliner</span> Kami
             </h2>
             <div className="w-12 h-[2px] bg-[#0F52BA] dark:bg-cyan-400 mx-auto" />
@@ -697,28 +699,30 @@ export default function LandingPage({
                     {/* Content */}
                     <div className="p-5 flex-1 flex flex-col justify-between">
                       <div className="space-y-2">
-                        <div className="text-[10px] font-mono uppercase tracking-widest text-[#0F52BA] dark:text-cyan-400 font-bold mt-1">
+                        <div className="text-[10px] font-mono uppercase tracking-widest text-[#0F52BA] dark:text-cyan-400 font-bold mt-1 leading-[14px]">
                           {categoriesList.find(c => c.id === item.category)?.label || item.category}
                         </div>
-                        <h3 className="font-extrabold text-base tracking-tight">{item.name}</h3>
-                        <p className={`text-xs line-clamp-2 leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                        <h3 className="font-extrabold text-[20px] leading-[27px] tracking-tight">{item.name}</h3>
+                        <p className={`text-xs line-clamp-2 leading-[17px] ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
                           {item.description}
                         </p>
                       </div>
 
                       <div className="pt-4 mt-4 border-t border-slate-100 dark:border-slate-800/60 flex items-center justify-between">
-                        <span className="font-extrabold text-sm font-mono text-slate-800 dark:text-white">
+                        <span className="font-extrabold text-[17px] font-mono text-[#0f52ba] dark:text-white">
                           Rp {item.price.toLocaleString('id-ID')}
                         </span>
                         
-                        <button
-                          id={`add-to-cart-${item.id}`}
-                          onClick={() => handleAddToCart(item)}
-                          disabled={!item.isAvailable || item.stock === 0}
-                          className={`px-3 py-2 rounded-xl text-xs font-bold transition-all shadow flex items-center gap-1.5 ${(!item.isAvailable || item.stock === 0) ? 'bg-slate-200 text-slate-400 dark:bg-slate-800 dark:text-slate-600 cursor-not-allowed shadow-none' : 'bg-gradient-to-r from-[#0F52BA] to-blue-500 hover:brightness-110 text-white hover:scale-[1.03]'}`}
-                        >
-                          <Plus className="w-3.5 h-3.5" /> TAMBAH
-                        </button>
+                        {!settings.disableOrderButtons && (
+                          <button
+                            id={`add-to-cart-${item.id}`}
+                            onClick={() => handleAddToCart(item)}
+                            disabled={!item.isAvailable || item.stock === 0}
+                            className={`px-3 py-2 rounded-xl text-xs font-bold transition-all shadow flex items-center gap-1.5 ${(!item.isAvailable || item.stock === 0) ? 'bg-slate-200 text-slate-400 dark:bg-slate-800 dark:text-slate-600 cursor-not-allowed shadow-none' : 'bg-gradient-to-r from-[#0F52BA] to-blue-500 hover:brightness-110 text-white hover:scale-[1.03]'}`}
+                          >
+                            <Plus className="w-3.5 h-3.5" /> TAMBAH
+                          </button>
+                        )}
                       </div>
                     </div>
                   </motion.div>
@@ -739,7 +743,7 @@ export default function LandingPage({
               <span className="text-xs uppercase font-mono tracking-widest text-[#0F52BA] dark:text-cyan-400 font-bold tracking-[0.2em]">
                 Pemenang Penghargaan &amp; Favorit Pelanggan
               </span>
-              <h2 className="text-3xl sm:text-6xl font-light font-serif tracking-tight text-white">
+              <h2 className="text-3xl sm:text-6xl font-light font-serif tracking-tight text-black dark:text-white">
                 Pilihan Menu <span className="font-serif font-bold italic text-[#0F52BA] dark:text-cyan-400">Andalan</span> Kami
               </h2>
             </div>
@@ -775,12 +779,14 @@ export default function LandingPage({
                   </div>
                   <div className="pt-6 border-t border-slate-100 dark:border-slate-800/60 flex items-center justify-between mt-6">
                     <span className="text-lg font-bold font-mono text-[#0F52BA] dark:text-cyan-300">Rp 38.000</span>
-                    <button
-                      onClick={() => handleAddToCart(menuItems.find(i => i.id === 'm3')!)}
-                      className="px-4 py-2 bg-[#0F52BA] hover:bg-blue-600 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-500/10"
-                    >
-                      PESAN SEKARANG
-                    </button>
+                    {!settings.disableOrderButtons && (
+                      <button
+                        onClick={() => handleAddToCart(menuItems.find(i => i.id === 'm3')!)}
+                        className="px-4 py-2 bg-[#0F52BA] hover:bg-blue-600 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-500/10"
+                      >
+                        PESAN SEKARANG
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -812,12 +818,14 @@ export default function LandingPage({
                   </div>
                   <div className="pt-6 border-t border-slate-100 dark:border-slate-800/60 flex items-center justify-between mt-6">
                     <span className="text-lg font-bold font-mono text-[#0F52BA] dark:text-cyan-300">Rp 55.000</span>
-                    <button
-                      onClick={() => handleAddToCart(menuItems.find(i => i.id === 'm5')!)}
-                      className="px-4 py-2 bg-[#0F52BA] hover:bg-blue-600 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-500/10"
-                    >
-                      PESAN SEKARANG
-                    </button>
+                    {!settings.disableOrderButtons && (
+                      <button
+                        onClick={() => handleAddToCart(menuItems.find(i => i.id === 'm5')!)}
+                        className="px-4 py-2 bg-[#0F52BA] hover:bg-blue-600 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-500/10"
+                      >
+                        PESAN SEKARANG
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1064,7 +1072,7 @@ export default function LandingPage({
                       type="text"
                       value={contactName}
                       onChange={(e) => setContactName(e.target.value)}
-                      placeholder="contoh: Raditya"
+                      placeholder="contoh: Alim Bahri"
                       className={`w-full p-2.5 text-xs rounded-lg border outline-none ${isDarkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-800'}`}
                     />
                   </div>
@@ -1075,7 +1083,7 @@ export default function LandingPage({
                       type="email"
                       value={contactEmail}
                       onChange={(e) => setContactEmail(e.target.value)}
-                      placeholder="contoh: raditya@mail.com"
+                      placeholder="contoh: alimbahri@gmail.com"
                       className={`w-full p-2.5 text-xs rounded-lg border outline-none ${isDarkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-800'}`}
                     />
                   </div>

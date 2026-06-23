@@ -306,7 +306,8 @@ export const INITIAL_SETTINGS: CafeSettings = {
   aboutFeature1Title: '☕ BIJI KOPI PILIHAN',
   aboutFeature1Desc: '100% biji kopi Arabika single-origin Kintamani & Toraja yang disangrai perlahan untuk mengoptimalkan keaslian rasa.',
   aboutFeature2Title: '🍔 MAKANAN LEZAT',
-  aboutFeature2Desc: 'Disajikan segar setiap hari oleh juru masak profesional kami untuk menghadirkan rasa yang istimewa.'
+  aboutFeature2Desc: 'Disajikan segar setiap hari oleh juru masak profesional kami untuk menghadirkan rasa yang istimewa.',
+  disableOrderButtons: false
 };
 
 export const INITIAL_GALLERY_PHOTOS: GalleryItem[] = [
