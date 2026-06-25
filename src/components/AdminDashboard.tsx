@@ -1278,24 +1278,7 @@ export default function AdminDashboard({
                 </div>
               )}
 
-              {/* Stats blocks metrics grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {[
-                  { label: 'Total Pendapatan Terjual (Selesai)', val: `Rp ${totalSalesVal.toLocaleString('id-ID')}`, icon: <DollarSign className="w-5 h-5 text-[#0F52BA] dark:text-cyan-400" />, detail: 'Dihitung otomatis dari pesanan selesai' },
-                  { label: 'Pesanan Aktif Dalam Antrean', val: activeOrdersCount, icon: <RefreshCcw className="w-5 h-5 text-[#0F52BA] dark:text-cyan-400" />, detail: 'Jumlah pesanan tertunda/diproses' },
-                  { label: 'Pelanggan Terdaftar', val: totalRegisteredCustomers, icon: <Users className="w-5 h-5 text-[#0F52BA] dark:text-cyan-400" />, detail: 'Akun pelanggan yang terdaftar' },
-                  { label: 'Menu Hidangan Aktif', val: menuItems.length, icon: <UtensilsCrossed className="w-5 h-5 text-[#0F52BA] dark:text-cyan-400" />, detail: 'Makanan & minuman tayang di beranda' }
-                ].map((stat, idx) => (
-                  <div key={idx} className={`p-6 rounded-none border-l-4 border-l-[#0F52BA] border-t border-r border-b transition-all duration-300 relative overflow-hidden ${isDarkMode ? 'bg-[#0A1F44] border-white/10 shadow-lg' : 'bg-white border-slate-200 shadow-sm'}`}>
-                    <div className="flex justify-between items-start">
-                      <span className="text-xs text-slate-400 font-bold uppercase tracking-wider font-sans">{stat.label}</span>
-                      <div className="p-2 bg-[#0F52BA]/10 text-[#0F52BA] dark:text-cyan-300">{stat.icon}</div>
-                    </div>
-                    <p className="text-2xl font-extrabold font-mono mt-4 tracking-tight">{stat.val}</p>
-                    <p className="text-[10px] text-slate-400 mt-2 font-mono uppercase">{stat.detail}</p>
-                  </div>
-                ))}
-              </div>
+              {/* Stats blocks metrics grid has been removed */}
 
               {/* Analytical custom beautiful SVG path chart & table */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
