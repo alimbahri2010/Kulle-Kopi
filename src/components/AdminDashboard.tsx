@@ -343,6 +343,23 @@ export default function AdminDashboard({
     setNotifications((prev) => [eventName, ...prev.slice(0, 5)]);
   };
 
+  const handleDeleteOrder = (id: string) => {
+    setDeleteConfirmState({
+      isOpen: true,
+      title: "Konfirmasi Hapus Pesanan",
+      message: `Apakah Anda yakin ingin menghapus pesanan "${id}"? Tindakan ini akan menghapus permanen data pesanan dari sistem kasir/antrian Kulle.`,
+      onConfirm: () => {
+        onUpdateOrders(orders.filter(ord => ord.id !== id));
+        if (selectedOrderDetails?.id === id) {
+          setSelectedOrderDetails(null);
+        }
+        // Add custom real-time event log
+        const eventName = `Pesanan ${id} berhasil dihapus secara permanen.`;
+        setNotifications((prev) => [eventName, ...prev.slice(0, 5)]);
+      }
+    });
+  };
+
   // Menu Modifiers
   const handleSaveMenuItem = (e: React.FormEvent) => {
     e.preventDefault();
@@ -1541,6 +1558,13 @@ export default function AdminDashboard({
                             >
                               Cetak Struk 🖨️
                             </button>
+                            <button
+                              onClick={() => handleDeleteOrder(ord.id)}
+                              className="p-1.5 bg-red-600/10 hover:bg-red-600 text-red-500 hover:text-white rounded text-[11px] font-semibold transition-all"
+                              title="Hapus Pesanan"
+                            >
+                              Hapus 🗑️
+                            </button>
                           </td>
                         </tr>
                       ))}
@@ -2650,9 +2674,12 @@ export default function AdminDashboard({
 
               <div className="border-t border-slate-800/20 pt-3 flex flex-wrap gap-2 justify-end">
                 <span className="text-xs uppercase font-mono tracking-widest flex items-center pr-3">Status Operasional:</span>
-                <button onClick={() => handleStatusUpdate(selectedOrderDetails.id, 'processing')} className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-[11px] rounded font-bold">Terima Pesanan</button>
-                <button onClick={() => handleStatusUpdate(selectedOrderDetails.id, 'completed')} className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] rounded font-bold">Siap Sajikan</button>
-                <button onClick={() => handleStatusUpdate(selectedOrderDetails.id, 'cancelled')} className="px-3 py-1.5 bg-red-600 hover:bg-red-750 text-white text-[11px] rounded font-bold">Batal</button>
+                <button onClick={() => handleStatusUpdate(selectedOrderDetails.id, 'processing')} className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-[11px] rounded font-bold cursor-pointer">Terima Pesanan</button>
+                <button onClick={() => handleStatusUpdate(selectedOrderDetails.id, 'completed')} className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] rounded font-bold cursor-pointer">Siap Sajikan</button>
+                <button onClick={() => handleStatusUpdate(selectedOrderDetails.id, 'cancelled')} className="px-3 py-1.5 bg-red-600 hover:bg-red-750 text-white text-[11px] rounded font-bold cursor-pointer">Batal</button>
+                <button onClick={() => handleDeleteOrder(selectedOrderDetails.id)} className="px-3 py-1.5 bg-rose-700 hover:bg-rose-800 text-white text-[11px] rounded font-bold cursor-pointer flex items-center gap-1">
+                  <Trash2 className="w-3.5 h-3.5" /> Hapus
+                </button>
               </div>
             </motion.div>
           </div>

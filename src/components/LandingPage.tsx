@@ -301,14 +301,6 @@ export default function LandingPage({
                 )}
                 <span className="text-xs font-semibold px-1">Keranjang</span>
               </button>
-
-              <button
-                id="admin-portal-switch"
-                onClick={() => setView('admin')}
-                className={`px-4 py-2 text-xs font-semibold rounded-xl border transition-all ${isDarkMode ? 'border-slate-800 text-slate-300 bg-slate-900/50 hover:border-cyan-500/30' : 'border-slate-200 text-slate-700 bg-slate-50 hover:bg-slate-100 hover:border-blue-500/20'}`}
-              >
-                Login Admin 🔒
-              </button>
             </div>
 
             {/* Mobile Actions Menu Trigger */}
@@ -367,15 +359,6 @@ export default function LandingPage({
                 className="px-3 py-1.5 rounded-lg border text-xs flex items-center space-x-1"
               >
                 <span>{isDarkMode ? '☀️ Terang' : '🌙 Gelap'}</span>
-              </button>
-            </div>
-            <div className="pt-2">
-              <button
-                id="mobile-admin-switch"
-                onClick={() => { setView('admin'); setMobileMenuOpen(false); }}
-                className="w-full py-2 bg-[#0F52BA]/10 text-[#0F52BA] dark:bg-cyan-500/10 dark:text-cyan-400 rounded-lg text-xs font-semibold"
-              >
-                Masuk ke Dashboard Admin 🔑
               </button>
             </div>
           </motion.div>
@@ -748,81 +731,51 @@ export default function LandingPage({
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            {/* Best Seller Card 1: Es Kopi Kareng */}
-            {menuItems.find(i => i.id === 'm3') && (
-              <div className={`p-6 md:p-8 rounded-3xl border transition-all duration-500 relative overflow-hidden flex flex-col md:flex-row gap-8 group ${isDarkMode ? 'bg-[#0a142c] border-[#0F52BA]/20' : 'bg-white border-slate-100 shadow-xl shadow-slate-200/50'}`}>
-                {/* Image panel */}
-                <div className="w-full md:w-1/2 h-64 md:h-full min-h-[220px] rounded-2xl overflow-hidden relative">
-                  <img
-                    src="https://images.unsplash.com/photo-1517701604599-bb29b565090c?auto=format&fit=crop&w=600&q=80"
-                    alt="Es Kopi Kareng"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    referrerPolicy="no-referrer"
-                  />
-                  <div className="absolute top-4 left-4 py-1 px-2 text-[9px] font-bold rounded uppercase bg-yellow-500 text-slate-900 tracking-wider">
-                    ⭐ 5.0 (500+ Ulasan)
+            {menuItems.filter(item => item.isBestSeller).length > 0 ? (
+              menuItems.filter(item => item.isBestSeller).map((item) => (
+                <div key={item.id} className={`p-6 md:p-8 rounded-3xl border transition-all duration-500 relative overflow-hidden flex flex-col md:flex-row gap-8 group ${isDarkMode ? 'bg-[#0a142c] border-[#0F52BA]/20' : 'bg-white border-slate-100 shadow-xl shadow-slate-200/50'}`}>
+                  {/* Image panel */}
+                  <div className="w-full md:w-1/2 h-64 md:h-full min-h-[220px] rounded-2xl overflow-hidden relative">
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      referrerPolicy="no-referrer"
+                    />
+                    <div className="absolute top-4 left-4 py-1 px-2 text-[9px] font-bold rounded uppercase bg-yellow-500 text-slate-900 tracking-wider">
+                      ⭐ {item.rating.toFixed(1)} ({item.reviewsCount}+ Ulasan)
+                    </div>
+                  </div>
+                  {/* Detail panel */}
+                  <div className="w-full md:w-1/2 flex flex-col justify-between">
+                    <div>
+                      <span className="text-xs font-mono uppercase text-[#0F52BA] dark:text-cyan-400 font-bold">
+                        {item.category.toUpperCase()}
+                      </span>
+                      <h3 className="text-2xl font-extrabold tracking-tight mt-1">{item.name}</h3>
+                      <p className={`text-xs leading-relaxed mt-4 ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                        {item.description}
+                      </p>
+                    </div>
+                    <div className="pt-6 border-t border-slate-100 dark:border-slate-800/60 flex items-center justify-between mt-6">
+                      <span className="text-lg font-bold font-mono text-[#0F52BA] dark:text-cyan-300">
+                        Rp {item.price.toLocaleString('id')}
+                      </span>
+                      {!settings.disableOrderButtons && (
+                        <button
+                          onClick={() => handleAddToCart(item)}
+                          className="px-4 py-2 bg-[#0F52BA] hover:bg-blue-600 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-500/10 cursor-pointer"
+                        >
+                          PESAN SEKARANG
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
-                {/* Detail panel */}
-                <div className="w-full md:w-1/2 flex flex-col justify-between">
-                  <div>
-                    <span className="text-xs font-mono uppercase text-[#0F52BA] dark:text-cyan-400 font-bold">Kopi Dingin Legendaris</span>
-                    <h3 className="text-2xl font-extrabold tracking-tight mt-1">Es Kopi Kareng</h3>
-                    <p className={`text-xs leading-relaxed mt-4 ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
-                      Minuman terlaris nomor 1 Kulle Kopi. Cita rasa berlapis memadukan madu alami, krim kental segar, nektar bunga kelapa, dan ekstrak ganda kopi Arabika Toraja.
-                    </p>
-                  </div>
-                  <div className="pt-6 border-t border-slate-100 dark:border-slate-800/60 flex items-center justify-between mt-6">
-                    <span className="text-lg font-bold font-mono text-[#0F52BA] dark:text-cyan-300">Rp 38.000</span>
-                    {!settings.disableOrderButtons && (
-                      <button
-                        onClick={() => handleAddToCart(menuItems.find(i => i.id === 'm3')!)}
-                        className="px-4 py-2 bg-[#0F52BA] hover:bg-blue-600 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-500/10"
-                      >
-                        PESAN SEKARANG
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Best Seller Card 2: Nasi Goreng Kulle */}
-            {menuItems.find(i => i.id === 'm5') && (
-              <div className={`p-6 md:p-8 rounded-3xl border transition-all duration-500 relative overflow-hidden flex flex-col md:flex-row gap-8 group ${isDarkMode ? 'bg-[#0a142c] border-[#0F52BA]/20' : 'bg-white border-slate-100 shadow-xl shadow-slate-200/50'}`}>
-                {/* Image panel */}
-                <div className="w-full md:w-1/2 h-64 md:h-full min-h-[220px] rounded-2xl overflow-hidden relative">
-                  <img
-                    src="https://images.unsplash.com/photo-1603133872878-684f208fb84b?auto=format&fit=crop&w=600&q=80"
-                    alt="Nasi Goreng Kulle"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    referrerPolicy="no-referrer"
-                  />
-                  <div className="absolute top-4 left-4 py-1 px-2 text-[9px] font-bold rounded uppercase bg-yellow-500 text-slate-900 tracking-wider">
-                    ⭐ 4.9 (380+ Ulasan)
-                  </div>
-                </div>
-                {/* Detail panel */}
-                <div className="w-full md:w-1/2 flex flex-col justify-between">
-                  <div>
-                    <span className="text-xs font-mono uppercase text-[#0F52BA] dark:text-cyan-400 font-bold">Seni Masak Wajan Orisinil</span>
-                    <h3 className="text-2xl font-extrabold tracking-tight mt-1">Nasi Goreng Kulle</h3>
-                    <p className={`text-xs leading-relaxed mt-4 ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
-                      Hidangan ikonik kami. Nasi lokal harum yang dikaramelisasi di wajan bersuhu tinggi dengan pasta cabai manis resep rahasia kami, disajikan dengan irisan daging ayam bumbu panggang, udang segar, dan acar.
-                    </p>
-                  </div>
-                  <div className="pt-6 border-t border-slate-100 dark:border-slate-800/60 flex items-center justify-between mt-6">
-                    <span className="text-lg font-bold font-mono text-[#0F52BA] dark:text-cyan-300">Rp 55.000</span>
-                    {!settings.disableOrderButtons && (
-                      <button
-                        onClick={() => handleAddToCart(menuItems.find(i => i.id === 'm5')!)}
-                        className="px-4 py-2 bg-[#0F52BA] hover:bg-blue-600 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-500/10"
-                      >
-                        PESAN SEKARANG
-                      </button>
-                    )}
-                  </div>
-                </div>
+              ))
+            ) : (
+              <div className="col-span-full text-center py-12 bg-[#0a142c]/20 rounded-3xl border border-dashed border-slate-800">
+                <p className="text-sm text-slate-400 font-mono">Belum ada menu yang ditandai sebagai terlaris saat ini.</p>
               </div>
             )}
           </div>
