@@ -362,10 +362,22 @@ export default function AdminDashboard({
     });
   };
 
+  // Helper to trigger alert notification logs
+  const triggerAlertNotification = (eventName: string) => {
+    setNotifications((prev) => [eventName, ...prev.slice(0, 5)]);
+  };
+
   // Menu Modifiers
   const handleSaveMenuItem = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!menuFormName || !menuFormDesc) return;
+    if (!menuFormName.trim()) {
+      alert("Silakan masukkan nama hidangan terlebih dahulu.");
+      return;
+    }
+    if (!menuFormDesc.trim()) {
+      alert("Silakan masukkan deskripsi hidangan terlebih dahulu.");
+      return;
+    }
 
     if (editingMenuItem) {
       // Modify
@@ -373,34 +385,38 @@ export default function AdminDashboard({
         if (item.id === editingMenuItem.id) {
           return {
             ...item,
-            name: menuFormName,
-            price: Number(menuFormPrice),
-            description: menuFormDesc,
+            name: menuFormName.trim(),
+            price: Number(menuFormPrice) || 0,
+            description: menuFormDesc.trim(),
             category: menuFormCategory,
             image: menuFormImage || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="400" height="300"><rect width="400" height="300" fill="%25230F52BA"/><circle cx="200" cy="150" r="80" fill="%2523FFFFFF" opacity="0.15"/><path d="M160 110 L240 110 L240 180 C240 210, 160 210, 160 180 Z" fill="none" stroke="%2523FFFFFF" stroke-width="8"/><path d="M240 130 C265 130, 265 160, 240 160" fill="none" stroke="%2523FFFFFF" stroke-width="8"/><text x="200" y="245" font-family="sans-serif" font-weight="bold" font-size="14" fill="%2523FFFFFF" text-anchor="middle">KULLE KOPI</text></svg>',
-            stock: Number(menuFormStock),
+            stock: Number(menuFormStock) || 0,
             isBestSeller: menuFormBestSeller
           };
         }
         return item;
       });
       onUpdateMenu(updated);
+      triggerAlertNotification(`Menu "${menuFormName}" berhasil diperbarui di katalog.`);
+      alert(`Berhasil memperbarui menu "${menuFormName}"! Katalog telah disinkronkan.`);
     } else {
       // Create new
       const newItem: MenuItem = {
         id: 'm_' + Date.now(),
-        name: menuFormName,
-        price: Number(menuFormPrice),
-        description: menuFormDesc,
+        name: menuFormName.trim(),
+        price: Number(menuFormPrice) || 0,
+        description: menuFormDesc.trim(),
         category: menuFormCategory,
         image: menuFormImage || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="400" height="300"><rect width="400" height="300" fill="%25230F52BA"/><circle cx="200" cy="150" r="80" fill="%2523FFFFFF" opacity="0.15"/><path d="M160 110 L240 110 L240 180 C240 210, 160 210, 160 180 Z" fill="none" stroke="%2523FFFFFF" stroke-width="8"/><path d="M240 130 C265 130, 265 160, 240 160" fill="none" stroke="%2523FFFFFF" stroke-width="8"/><text x="200" y="245" font-family="sans-serif" font-weight="bold" font-size="14" fill="%2523FFFFFF" text-anchor="middle">KULLE KOPI</text></svg>',
         rating: 5.0,
         reviewsCount: 1,
-        stock: Number(menuFormStock),
+        stock: Number(menuFormStock) || 0,
         isAvailable: true,
         isBestSeller: menuFormBestSeller
       };
       onUpdateMenu([...menuItems, newItem]);
+      triggerAlertNotification(`Menu baru "${menuFormName}" berhasil ditambahkan.`);
+      alert(`Berhasil menambahkan menu "${menuFormName}" ke katalog!`);
     }
 
     setItemFormOpen(false);
@@ -613,7 +629,7 @@ export default function AdminDashboard({
   const handleOpenEditGallery = (item: GalleryItem) => {
     setEditingGalleryItem(item);
     setGalleryFormTitle(item.title);
-    setGalleryFormCategory(item.category);
+    setGalleryFormCategory(item.category || 'interior');
     setGalleryFormImage(item.url);
     setGalleryFormOpen(true);
   };
@@ -625,11 +641,13 @@ export default function AdminDashboard({
       return;
     }
 
+    const finalCategory = galleryFormCategory || 'interior';
+
     if (editingGalleryItem) {
       // Edit
       const updatedList = galleryPhotos.map((photo) => 
         photo.id === editingGalleryItem.id 
-          ? { ...photo, title: galleryFormTitle, category: galleryFormCategory, url: galleryFormImage } 
+          ? { ...photo, title: galleryFormTitle, category: finalCategory, url: galleryFormImage } 
           : photo
       );
       onUpdateGallery(updatedList);
@@ -638,7 +656,7 @@ export default function AdminDashboard({
       const newItem: GalleryItem = {
         id: 'g_' + Date.now(),
         title: galleryFormTitle || 'Foto Baru Kulle Cafe',
-        category: galleryFormCategory,
+        category: finalCategory,
         url: galleryFormImage
       };
       onUpdateGallery([...galleryPhotos, newItem]);
@@ -3078,10 +3096,12 @@ export default function AdminDashboard({
                 <div className="space-y-1">
                   <label className="text-[10px] font-mono uppercase text-slate-404 font-bold text-slate-400">Kategori Galeri</label>
                   <select
+                    required
                     value={galleryFormCategory}
                     onChange={(e) => setGalleryFormCategory(e.target.value)}
                     className={`w-full p-2.5 rounded-xl border outline-none ${isDarkMode ? 'bg-slate-950 border-slate-800' : 'bg-slate-50 border-slate-200'}`}
                   >
+                    <option value="">-- Pilih Kategori --</option>
                     <option value="interior">Interior / Eksterior Kafe</option>
                     <option value="seduh">Proses Penyeduhan Kopi</option>
                     <option value="kopi">Menu Kopi (Minuman)</option>

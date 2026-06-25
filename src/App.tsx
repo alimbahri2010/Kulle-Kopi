@@ -237,7 +237,11 @@ export default function App() {
   const handleUpdateMenu = async (updated: MenuItem[]) => {
     const deletedIds = menuItems.filter(item => !updated.some(u => u.id === item.id)).map(item => item.id);
     setMenuItems(updated);
-    localStorage.setItem('kulle_menu_items', JSON.stringify(updated));
+    try {
+      localStorage.setItem('kulle_menu_items', JSON.stringify(updated));
+    } catch (e) {
+      console.warn('Gagal menyimpan menu ke LocalStorage karena quota penuh.', e);
+    }
     try {
       let syncError = false;
       if (deletedIds.length > 0) {
@@ -256,57 +260,81 @@ export default function App() {
       }
       
       if (syncError) {
-        localStorage.setItem('kulle_menu_items_dirty', 'true');
+        try { localStorage.setItem('kulle_menu_items_dirty', 'true'); } catch (_) {}
       } else {
-        localStorage.removeItem('kulle_menu_items_dirty');
+        try { localStorage.removeItem('kulle_menu_items_dirty'); } catch (_) {}
       }
     } catch (e) {
       console.log('Sinkronisasi menu ke Supabase ditunda (tabel belum terbentuk).');
-      localStorage.setItem('kulle_menu_items_dirty', 'true');
+      try { localStorage.setItem('kulle_menu_items_dirty', 'true'); } catch (_) {}
     }
   };
 
   const handleUpdateOrders = (updated: Order[]) => {
     setOrders(updated);
-    localStorage.setItem('kulle_orders', JSON.stringify(updated));
+    try {
+      localStorage.setItem('kulle_orders', JSON.stringify(updated));
+    } catch (e) {
+      console.warn('Gagal menyimpan pesanan ke LocalStorage karena quota penuh.', e);
+    }
   };
 
   const handleUpdateInventory = (updated: InventoryItem[]) => {
     setInventory(updated);
-    localStorage.setItem('kulle_inventory', JSON.stringify(updated));
+    try {
+      localStorage.setItem('kulle_inventory', JSON.stringify(updated));
+    } catch (e) {
+      console.warn('Gagal menyimpan inventaris ke LocalStorage karena quota penuh.', e);
+    }
   };
 
   const handleUpdateEmployees = (updated: Employee[]) => {
     setEmployees(updated);
-    localStorage.setItem('kulle_employees', JSON.stringify(updated));
+    try {
+      localStorage.setItem('kulle_employees', JSON.stringify(updated));
+    } catch (e) {
+      console.warn('Gagal menyimpan karyawan ke LocalStorage karena quota penuh.', e);
+    }
   };
 
   const handleUpdatePromotions = (updated: Promotion[]) => {
     setPromotions(updated);
-    localStorage.setItem('kulle_promotions', JSON.stringify(updated));
+    try {
+      localStorage.setItem('kulle_promotions', JSON.stringify(updated));
+    } catch (e) {
+      console.warn('Gagal menyimpan promosi ke LocalStorage karena quota penuh.', e);
+    }
   };
 
   const handleUpdateSettings = async (updated: CafeSettings) => {
     setSettings(updated);
-    localStorage.setItem('kulle_settings', JSON.stringify(updated));
+    try {
+      localStorage.setItem('kulle_settings', JSON.stringify(updated));
+    } catch (e) {
+      console.warn('Gagal menyimpan pengaturan ke LocalStorage karena quota penuh.', e);
+    }
     try {
       const { error } = await supabase.from('settings').upsert({ id: 'current_settings', ...updated });
       if (error) {
         console.error('Supabase settings upsert error:', error);
-        localStorage.setItem('kulle_settings_dirty', 'true');
+        try { localStorage.setItem('kulle_settings_dirty', 'true'); } catch (_) {}
       } else {
-        localStorage.removeItem('kulle_settings_dirty');
+        try { localStorage.removeItem('kulle_settings_dirty'); } catch (_) {}
       }
     } catch (e) {
       console.log('Sinkronisasi settings ke Supabase ditunda (tabel belum terbentuk).');
-      localStorage.setItem('kulle_settings_dirty', 'true');
+      try { localStorage.setItem('kulle_settings_dirty', 'true'); } catch (_) {}
     }
   };
 
   const handleUpdateGallery = async (updated: GalleryItem[]) => {
     const deletedIds = galleryPhotos.filter(item => !updated.some(u => u.id === item.id)).map(item => item.id);
     setGalleryPhotos(updated);
-    localStorage.setItem('kulle_gallery_photos', JSON.stringify(updated));
+    try {
+      localStorage.setItem('kulle_gallery_photos', JSON.stringify(updated));
+    } catch (e) {
+      console.warn('Gagal menyimpan galeri foto ke LocalStorage karena quota penuh.', e);
+    }
     try {
       let syncError = false;
       if (deletedIds.length > 0) {
@@ -325,20 +353,24 @@ export default function App() {
       }
 
       if (syncError) {
-        localStorage.setItem('kulle_gallery_dirty', 'true');
+        try { localStorage.setItem('kulle_gallery_dirty', 'true'); } catch (_) {}
       } else {
-        localStorage.removeItem('kulle_gallery_dirty');
+        try { localStorage.removeItem('kulle_gallery_dirty'); } catch (_) {}
       }
     } catch (e) {
       console.log('Sinkronisasi galeri foto ke Supabase ditunda (tabel belum terbentuk).');
-      localStorage.setItem('kulle_gallery_dirty', 'true');
+      try { localStorage.setItem('kulle_gallery_dirty', 'true'); } catch (_) {}
     }
   };
 
   const handleUpdateReviews = async (updated: Review[]) => {
     const deletedIds = reviews.filter(item => !updated.some(u => u.id === item.id)).map(item => item.id);
     setReviews(updated);
-    localStorage.setItem('kulle_reviews', JSON.stringify(updated));
+    try {
+      localStorage.setItem('kulle_reviews', JSON.stringify(updated));
+    } catch (e) {
+      console.warn('Gagal menyimpan ulasan ke LocalStorage karena quota penuh.', e);
+    }
     try {
       let syncError = false;
       if (deletedIds.length > 0) {
@@ -357,13 +389,13 @@ export default function App() {
       }
 
       if (syncError) {
-        localStorage.setItem('kulle_reviews_dirty', 'true');
+        try { localStorage.setItem('kulle_reviews_dirty', 'true'); } catch (_) {}
       } else {
-        localStorage.removeItem('kulle_reviews_dirty');
+        try { localStorage.removeItem('kulle_reviews_dirty'); } catch (_) {}
       }
     } catch (e) {
       console.log('Sinkronisasi ulasan ke Supabase ditunda (tabel belum terbentuk).');
-      localStorage.setItem('kulle_reviews_dirty', 'true');
+      try { localStorage.setItem('kulle_reviews_dirty', 'true'); } catch (_) {}
     }
   };
 
