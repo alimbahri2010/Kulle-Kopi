@@ -99,79 +99,91 @@ export default function App() {
         // --- 1. Load Settings ---
         let loadedSettings = INITIAL_SETTINGS;
         const storedSettings = localStorage.getItem('kulle_settings');
+        const isSettingsDirty = localStorage.getItem('kulle_settings_dirty') === 'true';
         if (storedSettings) {
           try { loadedSettings = JSON.parse(storedSettings); } catch (err) {}
         }
         setSettings(loadedSettings);
 
-        try {
-          const { data: dbSettings, error: errSettings } = await supabase
-            .from('settings')
-            .select('*')
-            .maybeSingle();
-          if (!errSettings && dbSettings) {
-            setSettings(dbSettings);
+        if (!isSettingsDirty) {
+          try {
+            const { data: dbSettings, error: errSettings } = await supabase
+              .from('settings')
+              .select('*')
+              .maybeSingle();
+            if (!errSettings && dbSettings) {
+              setSettings(dbSettings);
+            }
+          } catch (e) {
+            console.log('Tabel "settings" belum siap di Supabase, menggunakan data lokal.');
           }
-        } catch (e) {
-          console.log('Tabel "settings" belum siap di Supabase, menggunakan data lokal.');
         }
 
         // --- 2. Load Reviews ---
         let loadedReviews = INITIAL_REVIEWS;
         const storedReviews = localStorage.getItem('kulle_reviews');
+        const isReviewsDirty = localStorage.getItem('kulle_reviews_dirty') === 'true';
         if (storedReviews) {
           try { loadedReviews = JSON.parse(storedReviews); } catch (err) {}
         }
         setReviews(loadedReviews);
 
-        try {
-          const { data: dbReviews, error: errReviews } = await supabase
-            .from('reviews')
-            .select('*')
-            .order('date', { ascending: false });
-          if (!errReviews && dbReviews && dbReviews.length > 0) {
-            setReviews(dbReviews);
+        if (!isReviewsDirty) {
+          try {
+            const { data: dbReviews, error: errReviews } = await supabase
+              .from('reviews')
+              .select('*')
+              .order('date', { ascending: false });
+            if (!errReviews && dbReviews && dbReviews.length > 0) {
+              setReviews(dbReviews);
+            }
+          } catch (e) {
+            console.log('Tabel "reviews" belum siap di Supabase, menggunakan data lokal.');
           }
-        } catch (e) {
-          console.log('Tabel "reviews" belum siap di Supabase, menggunakan data lokal.');
         }
 
         // --- 3. Load Menu Items ---
         let loadedMenu = INITIAL_MENU_ITEMS;
         const storedItems = localStorage.getItem('kulle_menu_items');
+        const isMenuDirty = localStorage.getItem('kulle_menu_items_dirty') === 'true';
         if (storedItems) {
           try { loadedMenu = JSON.parse(storedItems); } catch (err) {}
         }
         setMenuItems(loadedMenu);
 
-        try {
-          const { data: dbMenu, error: errMenu } = await supabase
-            .from('menu_items')
-            .select('*');
-          if (!errMenu && dbMenu && dbMenu.length > 0) {
-            setMenuItems(dbMenu);
+        if (!isMenuDirty) {
+          try {
+            const { data: dbMenu, error: errMenu } = await supabase
+              .from('menu_items')
+              .select('*');
+            if (!errMenu && dbMenu && dbMenu.length > 0) {
+              setMenuItems(dbMenu);
+            }
+          } catch (e) {
+            console.log('Tabel "menu_items" belum siap di Supabase, menggunakan data lokal.');
           }
-        } catch (e) {
-          console.log('Tabel "menu_items" belum siap di Supabase, menggunakan data lokal.');
         }
 
         // --- 4. Load Gallery Photos ---
         let loadedGallery = INITIAL_GALLERY_PHOTOS;
         const storedGallery = localStorage.getItem('kulle_gallery_photos');
+        const isGalleryDirty = localStorage.getItem('kulle_gallery_dirty') === 'true';
         if (storedGallery) {
           try { loadedGallery = JSON.parse(storedGallery); } catch (err) {}
         }
         setGalleryPhotos(loadedGallery);
 
-        try {
-          const { data: dbGallery, error: errGallery } = await supabase
-            .from('gallery_items')
-            .select('*');
-          if (!errGallery && dbGallery && dbGallery.length > 0) {
-            setGalleryPhotos(dbGallery);
+        if (!isGalleryDirty) {
+          try {
+            const { data: dbGallery, error: errGallery } = await supabase
+              .from('gallery_items')
+              .select('*');
+            if (!errGallery && dbGallery && dbGallery.length > 0) {
+              setGalleryPhotos(dbGallery);
+            }
+          } catch (e) {
+            console.log('Tabel "gallery_items" belum siap di Supabase, menggunakan data lokal.');
           }
-        } catch (e) {
-          console.log('Tabel "gallery_items" belum siap di Supabase, menggunakan data lokal.');
         }
 
         // --- 5. Load Other local-only states ---
@@ -223,12 +235,34 @@ export default function App() {
 
   // Synchronize state helpers to local storage and sync to Supabase
   const handleUpdateMenu = async (updated: MenuItem[]) => {
+    const deletedIds = menuItems.filter(item => !updated.some(u => u.id === item.id)).map(item => item.id);
     setMenuItems(updated);
     localStorage.setItem('kulle_menu_items', JSON.stringify(updated));
     try {
-      await supabase.from('menu_items').upsert(updated);
+      let syncError = false;
+      if (deletedIds.length > 0) {
+        const { error } = await supabase.from('menu_items').delete().in('id', deletedIds);
+        if (error) {
+          console.error('Supabase delete error:', error);
+          syncError = true;
+        }
+      }
+      if (updated.length > 0) {
+        const { error } = await supabase.from('menu_items').upsert(updated);
+        if (error) {
+          console.error('Supabase upsert error:', error);
+          syncError = true;
+        }
+      }
+      
+      if (syncError) {
+        localStorage.setItem('kulle_menu_items_dirty', 'true');
+      } else {
+        localStorage.removeItem('kulle_menu_items_dirty');
+      }
     } catch (e) {
       console.log('Sinkronisasi menu ke Supabase ditunda (tabel belum terbentuk).');
+      localStorage.setItem('kulle_menu_items_dirty', 'true');
     }
   };
 
@@ -256,29 +290,132 @@ export default function App() {
     setSettings(updated);
     localStorage.setItem('kulle_settings', JSON.stringify(updated));
     try {
-      await supabase.from('settings').upsert({ id: 'current_settings', ...updated });
+      const { error } = await supabase.from('settings').upsert({ id: 'current_settings', ...updated });
+      if (error) {
+        console.error('Supabase settings upsert error:', error);
+        localStorage.setItem('kulle_settings_dirty', 'true');
+      } else {
+        localStorage.removeItem('kulle_settings_dirty');
+      }
     } catch (e) {
       console.log('Sinkronisasi settings ke Supabase ditunda (tabel belum terbentuk).');
+      localStorage.setItem('kulle_settings_dirty', 'true');
     }
   };
 
   const handleUpdateGallery = async (updated: GalleryItem[]) => {
+    const deletedIds = galleryPhotos.filter(item => !updated.some(u => u.id === item.id)).map(item => item.id);
     setGalleryPhotos(updated);
     localStorage.setItem('kulle_gallery_photos', JSON.stringify(updated));
     try {
-      await supabase.from('gallery_items').upsert(updated);
+      let syncError = false;
+      if (deletedIds.length > 0) {
+        const { error } = await supabase.from('gallery_items').delete().in('id', deletedIds);
+        if (error) {
+          console.error('Supabase gallery delete error:', error);
+          syncError = true;
+        }
+      }
+      if (updated.length > 0) {
+        const { error } = await supabase.from('gallery_items').upsert(updated);
+        if (error) {
+          console.error('Supabase gallery upsert error:', error);
+          syncError = true;
+        }
+      }
+
+      if (syncError) {
+        localStorage.setItem('kulle_gallery_dirty', 'true');
+      } else {
+        localStorage.removeItem('kulle_gallery_dirty');
+      }
     } catch (e) {
       console.log('Sinkronisasi galeri foto ke Supabase ditunda (tabel belum terbentuk).');
+      localStorage.setItem('kulle_gallery_dirty', 'true');
     }
   };
 
   const handleUpdateReviews = async (updated: Review[]) => {
+    const deletedIds = reviews.filter(item => !updated.some(u => u.id === item.id)).map(item => item.id);
     setReviews(updated);
     localStorage.setItem('kulle_reviews', JSON.stringify(updated));
     try {
-      await supabase.from('reviews').upsert(updated);
+      let syncError = false;
+      if (deletedIds.length > 0) {
+        const { error } = await supabase.from('reviews').delete().in('id', deletedIds);
+        if (error) {
+          console.error('Supabase reviews delete error:', error);
+          syncError = true;
+        }
+      }
+      if (updated.length > 0) {
+        const { error } = await supabase.from('reviews').upsert(updated);
+        if (error) {
+          console.error('Supabase reviews upsert error:', error);
+          syncError = true;
+        }
+      }
+
+      if (syncError) {
+        localStorage.setItem('kulle_reviews_dirty', 'true');
+      } else {
+        localStorage.removeItem('kulle_reviews_dirty');
+      }
     } catch (e) {
-      console.log('Sinkronisasi reviews ke Supabase ditunda (tabel belum terbentuk).');
+      console.log('Sinkronisasi ulasan ke Supabase ditunda (tabel belum terbentuk).');
+      localStorage.setItem('kulle_reviews_dirty', 'true');
+    }
+  };
+
+  const handleDeleteSeededData = async () => {
+    if (confirm("Apakah Anda yakin ingin menghapus semua data contoh? Ini akan mengosongkan semua menu, ulasan, pesanan, pelanggan, inventaris, promosi, dan galeri untuk memulai dari awal.")) {
+      // Clear localStorage
+      localStorage.setItem('kulle_menu_items', JSON.stringify([]));
+      localStorage.setItem('kulle_orders', JSON.stringify([]));
+      localStorage.setItem('kulle_customers', JSON.stringify([]));
+      localStorage.setItem('kulle_inventory', JSON.stringify([]));
+      localStorage.setItem('kulle_employees', JSON.stringify([]));
+      localStorage.setItem('kulle_promotions', JSON.stringify([]));
+      localStorage.setItem('kulle_gallery_photos', JSON.stringify([]));
+      localStorage.setItem('kulle_reviews', JSON.stringify([]));
+      
+      // Reset local states
+      setMenuItems([]);
+      setOrders([]);
+      setCustomers([]);
+      setInventory([]);
+      setEmployees([]);
+      setPromotions([]);
+      setGalleryPhotos([]);
+      setReviews([]);
+
+      // Clear Supabase tables if connected
+      try {
+        let dbCleanFailed = false;
+        const { error: errMenu } = await supabase.from('menu_items').delete().neq('id', 'dummy_id_never_exists');
+        if (errMenu) dbCleanFailed = true;
+        const { error: errGallery } = await supabase.from('gallery_items').delete().neq('id', 'dummy_id_never_exists');
+        if (errGallery) dbCleanFailed = true;
+        const { error: errReviews } = await supabase.from('reviews').delete().neq('id', 'dummy_id_never_exists');
+        if (errReviews) dbCleanFailed = true;
+
+        if (dbCleanFailed) {
+          localStorage.setItem('kulle_menu_items_dirty', 'true');
+          localStorage.setItem('kulle_gallery_dirty', 'true');
+          localStorage.setItem('kulle_reviews_dirty', 'true');
+        } else {
+          localStorage.removeItem('kulle_menu_items_dirty');
+          localStorage.removeItem('kulle_gallery_dirty');
+          localStorage.removeItem('kulle_reviews_dirty');
+        }
+      } catch (e) {
+        console.log('Error deleting Supabase seeded data:', e);
+        localStorage.setItem('kulle_menu_items_dirty', 'true');
+        localStorage.setItem('kulle_gallery_dirty', 'true');
+        localStorage.setItem('kulle_reviews_dirty', 'true');
+      }
+      
+      alert("Semua data contoh berhasil dihapus. Kafe Anda sekarang kosong dan siap diisi!");
     }
   };
 
@@ -401,6 +538,7 @@ export default function App() {
           onUpdateSettings={handleUpdateSettings}
           onUpdateGallery={handleUpdateGallery}
           onUpdateReviews={handleUpdateReviews}
+          onDeleteSeededData={handleDeleteSeededData}
           isDarkMode={isDarkMode}
           toggleDarkMode={toggleDarkMode}
           setView={handleSetView}

@@ -42,6 +42,7 @@ interface AdminDashboardProps {
   onUpdateSettings: (settings: CafeSettings) => void;
   onUpdateGallery: (updated: GalleryItem[]) => void;
   onUpdateReviews: (updated: Review[]) => void;
+  onDeleteSeededData?: () => void;
   isDarkMode: boolean;
   toggleDarkMode: () => void;
   setView: (view: 'customer' | 'admin') => void;
@@ -66,6 +67,7 @@ export default function AdminDashboard({
   onUpdateSettings,
   onUpdateGallery,
   onUpdateReviews,
+  onDeleteSeededData,
   isDarkMode,
   toggleDarkMode,
   setView
@@ -238,6 +240,14 @@ export default function AdminDashboard({
   const [custFormTotalSpent, setCustFormTotalSpent] = useState(0);
   const [custFormAvatar, setCustFormAvatar] = useState('');
 
+  // Custom Confirmation Dialog State for bypassing sandboxed iframe restrictions
+  const [deleteConfirmState, setDeleteConfirmState] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  } | null>(null);
+
 
   // Authentication validation
   const handleAuthSubmit = async (e: React.FormEvent) => {
@@ -391,9 +401,14 @@ export default function AdminDashboard({
   };
 
   const handleDeleteMenuItem = (id: string) => {
-    if (confirm('Are you absolutely sure you want to delete this menu item? This will sync immediately.')) {
-      onUpdateMenu(menuItems.filter(i => i.id !== id));
-    }
+    setDeleteConfirmState({
+      isOpen: true,
+      title: "Konfirmasi Hapus Menu",
+      message: "Apakah Anda yakin ingin menghapus hidangan ini dari katalog Kulle? Perubahan ini akan langsung disimpan dan disinkronkan.",
+      onConfirm: () => {
+        onUpdateMenu(menuItems.filter(i => i.id !== id));
+      }
+    });
   };
 
   const resetMenuForm = () => {
@@ -613,10 +628,15 @@ export default function AdminDashboard({
   };
 
   const handleDeleteGallery = (id: string) => {
-    if (confirm("Apakah Anda yakin ingin menghapus foto galeri ini?")) {
-      const updatedList = galleryPhotos.filter(photo => photo.id !== id);
-      onUpdateGallery(updatedList);
-    }
+    setDeleteConfirmState({
+      isOpen: true,
+      title: "Konfirmasi Hapus Galeri",
+      message: "Apakah Anda yakin ingin menghapus foto galeri ini? Foto ini akan langsung dihapus dari media promosi Kulle.",
+      onConfirm: () => {
+        const updatedList = galleryPhotos.filter(photo => photo.id !== id);
+        onUpdateGallery(updatedList);
+      }
+    });
   };
 
   const handleGalleryImageUploadChange = (file: File) => {
@@ -686,10 +706,15 @@ export default function AdminDashboard({
   };
 
   const handleDeleteReview = (id: string) => {
-    if (confirm("Apakah Anda yakin ingin menghapus ulasan ini?")) {
-      const updatedList = reviews.filter(r => r.id !== id);
-      onUpdateReviews(updatedList);
-    }
+    setDeleteConfirmState({
+      isOpen: true,
+      title: "Konfirmasi Hapus Ulasan",
+      message: "Apakah Anda yakin ingin menghapus ulasan pelanggan ini? Data ini akan langsung disinkronkan.",
+      onConfirm: () => {
+        const updatedList = reviews.filter(r => r.id !== id);
+        onUpdateReviews(updatedList);
+      }
+    });
   };
 
   const handleReviewAvatarUploadChange = (file: File) => {
@@ -1581,8 +1606,15 @@ export default function AdminDashboard({
                       </button>
                       <button
                         onClick={() => {
-                          if (onUpdateCustomers && confirm(`Apakah Anda yakin ingin menghapus pelanggan "${c.name}"?`)) {
-                            onUpdateCustomers(customers.filter((cust) => cust.id !== c.id));
+                          if (onUpdateCustomers) {
+                            setDeleteConfirmState({
+                              isOpen: true,
+                              title: "Konfirmasi Hapus Pelanggan",
+                              message: `Apakah Anda yakin ingin menghapus pelanggan "${c.name}"? Data riwayat ini akan dihapus dari portal operasional Kulle.`,
+                              onConfirm: () => {
+                                onUpdateCustomers(customers.filter((cust) => cust.id !== c.id));
+                              }
+                            });
                           }
                         }}
                         className="flex-1 py-1.5 text-[10px] font-bold text-red-500 hover:text-white bg-red-500/10 hover:bg-red-500 rounded-lg flex items-center justify-center gap-1 transition-all cursor-pointer"
@@ -1762,10 +1794,15 @@ export default function AdminDashboard({
                           </button>
                           <button
                             onClick={() => {
-                              if (confirm(`Apakah Anda yakin ingin menghapus bahan baku "${item.name}"?`)) {
-                                const updated = inventory.filter(i => i.id !== item.id);
-                                onUpdateInventory(updated);
-                              }
+                              setDeleteConfirmState({
+                                isOpen: true,
+                                title: "Konfirmasi Hapus Bahan Baku",
+                                message: `Apakah Anda yakin ingin menghapus bahan baku "${item.name}"? Data ini akan langsung disinkronkan.`,
+                                onConfirm: () => {
+                                  const updated = inventory.filter(i => i.id !== item.id);
+                                  onUpdateInventory(updated);
+                                }
+                              });
                             }}
                             className="p-1 px-2 bg-red-600/10 hover:bg-red-600/20 text-red-600 dark:text-red-400 text-[10px] rounded font-bold uppercase font-mono transition-all"
                             title="Hapus bahan baku"
@@ -2487,6 +2524,29 @@ export default function AdminDashboard({
                   <p className="text-xs text-emerald-500 font-bold">✓ Pengaturan utama sukses disimpan! Landing page berhasil diperbarui secara real-time.</p>
                 )}
               </form>
+
+              {/* -----------------------------------------------
+                  DELETE SEEDED DATA SECTION
+                  ----------------------------------------------- */}
+              <div className={`mt-8 p-6 rounded-2xl border ${isDarkMode ? 'border-red-500/20 bg-red-500/5' : 'border-red-200 bg-red-50/50'} space-y-4`}>
+                <div>
+                  <h4 className="text-xs font-black uppercase tracking-wider text-red-600 dark:text-red-400">Pembersihan Data Contoh (Seeded Data)</h4>
+                  <p className={`text-[11px] ${isDarkMode ? 'text-slate-400' : 'text-slate-650'} mt-0.5`}>Hapus semua data contoh bawaan untuk memulai pengisian data kafe Anda sendiri dari awal yang bersih.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (onDeleteSeededData) {
+                      onDeleteSeededData();
+                    } else {
+                      alert("Fungsi penghapusan belum terhubung.");
+                    }
+                  }}
+                  className="px-4 py-2.5 bg-red-600 hover:bg-red-500 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-red-600/10 cursor-pointer"
+                >
+                  HAPUS SEMUA DATA CONTOH
+                </button>
+              </div>
 
             </div>
           )}
@@ -3248,6 +3308,58 @@ export default function AdminDashboard({
                   </button>
                 </div>
               </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ==============================================
+          CUSTOM CONFIRMATION MODAL (BYPASS IFRAME LIMITATIONS)
+          ============================================== */}
+      <AnimatePresence>
+        {deleteConfirmState && deleteConfirmState.isOpen && (
+          <div className="fixed inset-0 z-55 flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 0.6 }} 
+              exit={{ opacity: 0 }} 
+              onClick={() => setDeleteConfirmState(null)} 
+              className="absolute inset-0 bg-[#060D1E]" 
+            />
+            <motion.div 
+              initial={{ scale: 0.95, y: 10 }} 
+              animate={{ scale: 1, y: 0 }} 
+              exit={{ scale: 0.95, y: 10 }} 
+              className={`relative max-w-md w-full rounded-2xl border p-6 space-y-4 shadow-2xl z-10 ${isDarkMode ? 'bg-slate-900 border-red-500/20 text-white' : 'bg-white border-slate-200 text-slate-850'}`}
+            >
+              <div className="flex items-center gap-3 text-red-500">
+                <ShieldAlert className="w-6 h-6 shrink-0 text-red-500 font-bold" />
+                <h3 className="font-bold text-sm uppercase tracking-wider font-mono">{deleteConfirmState.title}</h3>
+              </div>
+              
+              <p className={`text-xs leading-relaxed ${isDarkMode ? 'text-slate-300' : 'text-slate-650'}`}>
+                {deleteConfirmState.message}
+              </p>
+
+              <div className="pt-2 flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setDeleteConfirmState(null)}
+                  className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all text-center cursor-pointer ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
+                >
+                  BATAL
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    deleteConfirmState.onConfirm();
+                    setDeleteConfirmState(null);
+                  }}
+                  className="flex-1 py-2 bg-gradient-to-r from-red-600 to-rose-600 font-bold text-white text-xs rounded-xl shadow shadow-red-600/25 cursor-pointer hover:from-red-500 hover:to-rose-500 transition-all"
+                >
+                  YA, HAPUS
+                </button>
+              </div>
             </motion.div>
           </div>
         )}
