@@ -1280,107 +1280,286 @@ export default function AdminDashboard({
                 </div>
               )}
 
-              {/* Stats blocks metrics grid has been removed */}
-
-              {/* Analytical custom beautiful SVG path chart & table */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Analytics & Activity Section */}
+              <div className="space-y-6">
                 
-                {/* SVG Line chart (Sales trend) */}
-                <div className={`lg:col-span-2 p-6 rounded-2xl border flex flex-col justify-between ${isDarkMode ? 'bg-[#0a142c] border-[#0F52BA]/15' : 'bg-white border-slate-100 shadow-sm'}`}>
-                  <div className="flex justify-between items-center mb-6">
+                {/* Visual Line Charts Grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  
+                  {/* CHART 1: Website Visitors Line Chart */}
+                  <div className={`p-6 rounded-2xl border flex flex-col justify-between transition-all ${isDarkMode ? 'bg-[#0a142c] border-[#0F52BA]/15 shadow-xl shadow-black/20' : 'bg-white border-slate-200/80 shadow-sm'}`}>
                     <div>
-                      <h3 className="font-extrabold text-base tracking-tight text-white">Tren Pendapatan Harian Kulle</h3>
-                      <p className="text-[10px] text-slate-400 uppercase tracking-widest font-mono">Simulator metrik penjualan operasional dalam 7 jam aktif terakhir</p>
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <span className="text-[10px] font-bold uppercase tracking-widest font-mono text-indigo-500">TRAFFIC MONITOR</span>
+                          <h3 className={`font-extrabold text-base tracking-tight mt-0.5 ${isDarkMode ? 'text-white' : 'text-slate-950'}`}>Website Visitors Trend</h3>
+                        </div>
+                        <span className={`px-2 py-0.5 text-[9px] font-extrabold uppercase font-mono rounded-md ${isDarkMode ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20' : 'bg-indigo-50 text-indigo-600 border border-indigo-200'}`}>
+                          Live
+                        </span>
+                      </div>
+                      
+                      <div className="flex items-baseline gap-2 mt-2 mb-4">
+                        <span className={`text-2xl font-extrabold font-mono tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>1,482</span>
+                        <span className="text-xs text-emerald-500 font-bold flex items-center gap-0.5">
+                          ↑ 18.2% <span className="text-[10px] text-slate-400 font-normal font-sans">vs pekan lalu</span>
+                        </span>
+                      </div>
                     </div>
-                    <span className="px-2.5 py-1 text-[10px] font-bold bg-emerald-500/10 text-emerald-500 rounded-lg">KALKULASI LANGSUNG (LIVE)</span>
+
+                    {/* SVG Line Chart for Visitors */}
+                    <div className="h-44 relative w-full flex items-end mt-2">
+                      <div className="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-[0.03] dark:opacity-[0.08]">
+                        <div className="border-t border-white w-full" />
+                        <div className="border-t border-white w-full" />
+                        <div className="border-t border-white w-full" />
+                        <div className="border-t border-white w-full" />
+                      </div>
+
+                      <svg className="w-full h-full" viewBox="0 0 500 180" preserveAspectRatio="none">
+                        <defs>
+                          <linearGradient id="visitorGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="#6366f1" stopOpacity="0.3"/>
+                            <stop offset="100%" stopColor="#6366f1" stopOpacity="0"/>
+                          </linearGradient>
+                        </defs>
+
+                        {/* Smooth Area Under Line */}
+                        <path 
+                          d="M 0,160 Q 41,135 83,115 T 166,130 T 250,90 T 333,75 T 416,40 T 500,20 L 500,180 L 0,180 Z" 
+                          fill="url(#visitorGrad)"
+                        />
+
+                        {/* Line Path */}
+                        <path 
+                          d="M 0,160 Q 41,135 83,115 T 166,130 T 250,90 T 333,75 T 416,40 T 500,20" 
+                          fill="none" 
+                          stroke="#6366f1" 
+                          strokeWidth="3.5"
+                          strokeLinecap="round"
+                        />
+
+                        {/* Interactive glow nodes */}
+                        <circle cx="166" cy="130" r="4.5" fill="#818cf8" stroke={isDarkMode ? '#0a142c' : '#fff'} strokeWidth="1.5" />
+                        <circle cx="333" cy="75" r="4.5" fill="#818cf8" stroke={isDarkMode ? '#0a142c' : '#fff'} strokeWidth="1.5" />
+                        <circle cx="500" cy="20" r="4.5" fill="#818cf8" stroke={isDarkMode ? '#0a142c' : '#fff'} strokeWidth="1.5" className="animate-ping" />
+                        <circle cx="500" cy="20" r="4.5" fill="#818cf8" stroke={isDarkMode ? '#0a142c' : '#fff'} strokeWidth="1.5" />
+                      </svg>
+
+                      {/* Floating Tooltips */}
+                      <div className="absolute top-[48%] left-[24%] transform -translate-x-1/2 -translate-y-1/2">
+                        <span className={`px-2 py-0.5 rounded text-[9px] font-bold font-mono border ${isDarkMode ? 'bg-slate-950 text-indigo-400 border-indigo-500/30 shadow' : 'bg-white text-indigo-600 border-slate-200 shadow-sm'}`}>190</span>
+                      </div>
+                      <div className="absolute top-[28%] left-[64%] transform -translate-x-1/2 -translate-y-1/2">
+                        <span className={`px-2 py-0.5 rounded text-[9px] font-bold font-mono border ${isDarkMode ? 'bg-slate-950 text-indigo-400 border-indigo-500/30 shadow' : 'bg-white text-indigo-600 border-slate-200 shadow-sm'}`}>340</span>
+                      </div>
+                      <div className="absolute top-[5%] right-[1%] transform translate-y-[-10px]">
+                        <span className={`px-2 py-0.5 rounded text-[9px] font-bold font-mono border ${isDarkMode ? 'bg-slate-950 text-emerald-400 border-emerald-500/30 shadow' : 'bg-white text-emerald-600 border-slate-200 shadow-sm'}`}>510 (Hari ini)</span>
+                      </div>
+                    </div>
+
+                    {/* Timeline labels */}
+                    <div className="flex justify-between text-[9px] font-mono text-slate-400 mt-4 border-t border-slate-100 dark:border-slate-800/60 pt-2 uppercase tracking-wider">
+                      <span>Sen</span>
+                      <span>Sel</span>
+                      <span>Rab</span>
+                      <span>Kam</span>
+                      <span>Jum</span>
+                      <span>Sab</span>
+                      <span>Min</span>
+                    </div>
                   </div>
 
-                  {/* CUSTOM SUPER HIGH-END GRAPHICAL SVG CHART */}
-                  <div className="h-64 relative w-full flex items-end">
-                    
-                    {/* Background Grid Lines */}
-                    <div className="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-[0.03] dark:opacity-[0.1]">
-                      <div className="border-t border-white w-full" />
-                      <div className="border-t border-white w-full" />
-                      <div className="border-t border-white w-full" />
-                      <div className="border-t border-white w-full" />
+                  {/* CHART 2: Daily Revenue Line Chart (Tren Pendapatan Harian) */}
+                  <div className={`p-6 rounded-2xl border flex flex-col justify-between transition-all ${isDarkMode ? 'bg-[#0a142c] border-[#0F52BA]/15 shadow-xl shadow-black/20' : 'bg-white border-slate-200/80 shadow-sm'}`}>
+                    <div>
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <span className="text-[10px] font-bold uppercase tracking-widest font-mono text-emerald-500">SALES & REVENUE</span>
+                          <h3 className={`font-extrabold text-base tracking-tight mt-0.5 ${isDarkMode ? 'text-white' : 'text-slate-950'}`}>Tren Pendapatan Harian</h3>
+                        </div>
+                        <span className={`px-2 py-0.5 text-[9px] font-extrabold uppercase font-mono rounded-md ${isDarkMode ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-emerald-50 text-emerald-600 border border-emerald-200'}`}>
+                          Kalkulasi Otomatis
+                        </span>
+                      </div>
+
+                      <div className="flex items-baseline gap-2 mt-2 mb-4">
+                        <span className={`text-2xl font-extrabold font-mono tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                          Rp {orders.filter(o => o.status === 'completed').reduce((sum, o) => sum + o.total, 0).toLocaleString('id-ID')}
+                        </span>
+                        <span className="text-xs text-emerald-500 font-bold flex items-center gap-0.5">
+                          ↑ 14.5% <span className="text-[10px] text-slate-400 font-normal font-sans">Selesai Terjual</span>
+                        </span>
+                      </div>
                     </div>
 
-                    <svg className="w-full h-full" viewBox="0 0 500 200" preserveAspectRatio="none">
-                      {/* Gradient Definitions */}
-                      <defs>
-                        <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#0F52BA" stopOpacity="0.4"/>
-                          <stop offset="100%" stopColor="#0F52BA" stopOpacity="0"/>
-                        </linearGradient>
-                      </defs>
+                    {/* SVG Line Chart for Daily Revenue */}
+                    <div className="h-44 relative w-full flex items-end mt-2">
+                      <div className="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-[0.03] dark:opacity-[0.08]">
+                        <div className="border-t border-white w-full" />
+                        <div className="border-t border-white w-full" />
+                        <div className="border-t border-white w-full" />
+                        <div className="border-t border-white w-full" />
+                      </div>
 
-                      {/* Smooth Area Under Line */}
-                      <path 
-                        d="M 0,200 L 0,150 Q 80,105 160,140 T 320,80 T 500,60 L 500,200 Z" 
-                        fill="url(#chartGrad)"
-                      />
+                      <svg className="w-full h-full" viewBox="0 0 500 180" preserveAspectRatio="none">
+                        <defs>
+                          <linearGradient id="revenueGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="#10b981" stopOpacity="0.3"/>
+                            <stop offset="100%" stopColor="#10b981" stopOpacity="0"/>
+                          </linearGradient>
+                        </defs>
 
-                      {/* Line Path */}
-                      <path 
-                        d="M 0,150 Q 80,105 160,140 T 320,80 T 500,60" 
-                        fill="none" 
-                        stroke="#0F52BA" 
-                        strokeWidth="4"
-                        strokeLinecap="round"
-                      />
+                        {/* Smooth Area Under Line */}
+                        <path 
+                          d="M 0,140 Q 41,120 83,110 T 166,135 T 250,90 T 333,70 T 416,35 T 500,15 L 500,180 L 0,180 Z" 
+                          fill="url(#revenueGrad)"
+                        />
 
-                      {/* Glowing points */}
-                      <circle cx="160" cy="140" r="5" fill="#22d3ee" className="animate-pulse" />
-                      <circle cx="320" cy="80" r="5" fill="#22d3ee" className="animate-pulse" />
-                      <circle cx="500" cy="60" r="5" fill="#22d3ee" className="animate-pulse" />
-                    </svg>
+                        {/* Line Path */}
+                        <path 
+                          d="M 0,140 Q 41,120 83,110 T 166,135 T 250,90 T 333,70 T 416,35 T 500,15" 
+                          fill="none" 
+                          stroke="#10b981" 
+                          strokeWidth="3.5"
+                          strokeLinecap="round"
+                        />
 
-                    {/* Chart Overlay Tooltip Popovers */}
-                    <div className="absolute top-[35%] left-[30%] text-center">
-                      <span className="px-2 py-1 rounded bg-[#060D1E] text-[10px] font-bold text-[#0F52BA] dark:text-cyan-400 border border-[#0F52BA]/30 font-mono">Rp 480rb</span>
+                        {/* Interactive glow nodes */}
+                        <circle cx="166" cy="135" r="4.5" fill="#34d399" stroke={isDarkMode ? '#0a142c' : '#fff'} strokeWidth="1.5" />
+                        <circle cx="333" cy="70" r="4.5" fill="#34d399" stroke={isDarkMode ? '#0a142c' : '#fff'} strokeWidth="1.5" />
+                        <circle cx="500" cy="15" r="4.5" fill="#34d399" stroke={isDarkMode ? '#0a142c' : '#fff'} strokeWidth="1.5" className="animate-pulse" />
+                      </svg>
+
+                      {/* Floating Tooltips */}
+                      <div className="absolute top-[52%] left-[26%] transform -translate-x-1/2 -translate-y-1/2">
+                        <span className={`px-2 py-0.5 rounded text-[9px] font-bold font-mono border ${isDarkMode ? 'bg-slate-950 text-emerald-400 border-emerald-500/30 shadow' : 'bg-white text-emerald-600 border-slate-200 shadow-sm'}`}>Rp 950rb</span>
+                      </div>
+                      <div className="absolute top-[24%] left-[64%] transform -translate-x-1/2 -translate-y-1/2">
+                        <span className={`px-2 py-0.5 rounded text-[9px] font-bold font-mono border ${isDarkMode ? 'bg-slate-950 text-emerald-400 border-emerald-500/30 shadow' : 'bg-white text-emerald-600 border-slate-200 shadow-sm'}`}>Rp 1.8jt</span>
+                      </div>
                     </div>
-                    <div className="absolute top-[20%] left-[62%] text-center">
-                      <span className="px-2 py-1 rounded bg-[#060D1E] text-[10px] font-bold text-[#0F52BA] dark:text-cyan-400 border border-[#0F52BA]/30 font-mono">Rp 840rb</span>
+
+                    {/* Timeline labels */}
+                    <div className="flex justify-between text-[9px] font-mono text-slate-400 mt-4 border-t border-slate-100 dark:border-slate-800/60 pt-2 uppercase tracking-wider">
+                      <span>Sen</span>
+                      <span>Sel</span>
+                      <span>Rab</span>
+                      <span>Kam</span>
+                      <span>Jum</span>
+                      <span>Sab</span>
+                      <span>Min</span>
                     </div>
                   </div>
 
-                  {/* X-Axis hours notation */}
-                  <div className="flex justify-between text-[9px] font-mono text-slate-400 mt-4 border-t border-slate-800/20 pt-2 uppercase">
-                    <span>07:00 Pagi</span>
-                    <span>10:00 (Puncak Kopi Hitam)</span>
-                    <span>13:00 (Makan Siang)</span>
-                    <span>16:00 (Camilan Sore)</span>
-                    <span>20:00 (Puncak Musik Jazz)</span>
-                  </div>
                 </div>
 
-                {/* Operations side activity feed */}
-                <div className={`p-6 rounded-2xl border flex flex-col justify-between ${isDarkMode ? 'bg-[#0a142c] border-[#0F52BA]/15' : 'bg-white border-slate-100 shadow-sm'}`}>
-                  <div>
-                    <h3 className="font-extrabold text-base tracking-tight mb-4 text-white">Catatan Aktivitas Operasional</h3>
-                    <div className="space-y-4">
-                      {orders.map((ord, idx) => (
-                        <div key={ord.id} className="flex gap-3 text-xs border-b border-slate-800/10 pb-3 last:border-0 last:pb-0">
-                          <div className={`w-2.5 h-2.5 rounded-full mt-1 shrink-0 ${ord.status === 'completed' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
-                          <div className="text-slate-700 dark:text-slate-300">
-                            <p className="font-bold">{ord.customerName} memesan {ord.items.length} hidangan</p>
-                            <p className="text-slate-400 text-[10px] font-mono mt-0.5">{ord.tableNumber} • Rp {ord.total.toLocaleString('id')} • {ord.paymentMethod.toUpperCase()}</p>
-                          </div>
-                        </div>
-                      ))}
+                {/* BOX 3: Catatan Aktivitas Operasional */}
+                <div className={`p-6 rounded-2xl border transition-all ${isDarkMode ? 'bg-[#0a142c] border-[#0F52BA]/15 shadow-xl' : 'bg-white border-slate-200/80 shadow-sm'}`}>
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
+                    <div>
+                      <span className="text-[10px] font-bold uppercase tracking-widest font-mono text-amber-500">SYSTEM TIMELINE</span>
+                      <h3 className={`font-extrabold text-base tracking-tight mt-0.5 ${isDarkMode ? 'text-white' : 'text-slate-950'}`}>Catatan Aktivitas Operasional</h3>
+                      <p className="text-[10px] text-slate-400 font-sans mt-0.5">Daftar kejadian, transaksi, dan perubahan konfigurasi sistem terbaru</p>
                     </div>
+                    
+                    <button
+                      onClick={() => setActiveSidebarTab('orders')}
+                      className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition-all ${isDarkMode ? 'border-slate-800 hover:border-slate-700 hover:bg-slate-900/50 text-slate-300' : 'border-slate-200 hover:bg-slate-50 text-slate-700'}`}
+                    >
+                      Buka Panel Antrean Pesanan
+                    </button>
                   </div>
 
-                  <button
-                    onClick={() => setActiveSidebarTab('orders')}
-                    className="w-full mt-6 py-2.5 border border-slate-350 dark:border-slate-800 hover:border-[#0F52BA]/65 rounded-xl text-center font-bold text-xs"
-                  >
-                    BUKA PANEL ANTRIAN PESANAN
-                  </button>
+                  {/* Operational Timeline Entries */}
+                  <div className="space-y-4 max-h-96 overflow-y-auto pr-1">
+                    
+                    {/* Low stock warning event */}
+                    {lowStockCount > 0 && (
+                      <div className="flex gap-4 p-3.5 rounded-xl bg-amber-500/5 border border-amber-500/10 text-xs">
+                        <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-500 shrink-0">
+                          <ShieldAlert className="w-4.5 h-4.5 animate-pulse" />
+                        </div>
+                        <div className="flex-1 space-y-1">
+                          <div className="flex justify-between items-center">
+                            <span className="font-extrabold text-amber-500">Peringatan Stok Rendah</span>
+                            <span className="text-[9px] text-slate-400 font-mono">Sistem • Baru saja</span>
+                          </div>
+                          <p className="text-slate-400 leading-relaxed font-sans">
+                            Terdapat <span className="font-semibold text-amber-400">{lowStockCount}</span> item bahan baku di gudang yang berada di bawah ambang batas minimum. Harap segera lakukan restock dari pemasok.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Real Order Activities */}
+                    {orders.map((ord, idx) => (
+                      <div key={ord.id} className="flex gap-4 p-3.5 rounded-xl hover:bg-slate-500/5 transition-colors border border-transparent hover:border-slate-500/10 text-xs">
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${ord.status === 'completed' ? 'bg-emerald-500/10 text-emerald-500' : ord.status === 'processing' ? 'bg-blue-500/10 text-blue-500' : 'bg-amber-500/10 text-amber-500'}`}>
+                          <ShoppingBag className="w-4.5 h-4.5" />
+                        </div>
+                        <div className="flex-1 space-y-1">
+                          <div className="flex justify-between items-center">
+                            <span className={`font-extrabold ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>
+                              Pesanan {ord.id} ({ord.customerName})
+                            </span>
+                            <span className="text-[9px] text-slate-400 font-mono">
+                              {new Date(ord.createdAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} WITA
+                            </span>
+                          </div>
+                          <p className="text-slate-400 font-sans leading-relaxed">
+                            Menerima transaksi senilai <span className={`font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Rp {ord.total.toLocaleString('id-ID')}</span> via <span className="uppercase font-mono text-[10px]">{ord.paymentMethod}</span> untuk <span className="font-semibold">{ord.tableNumber || 'Take Away'}</span>.
+                          </p>
+                          <div className="flex items-center gap-2 mt-2 pt-1">
+                            <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${ord.status === 'completed' ? 'bg-emerald-500/15 text-emerald-400' : ord.status === 'processing' ? 'bg-blue-500/15 text-blue-400' : 'bg-amber-500/15 text-amber-400'}`}>
+                              {ord.status === 'completed' ? 'Selesai' : ord.status === 'processing' ? 'Diproses' : 'Menunggu'}
+                            </span>
+                            {ord.notes && (
+                              <span className="text-[10px] text-slate-500 italic truncate max-w-xs">
+                                "{ord.notes}"
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+
+                    {/* Default simulated activities to populate log beautifully */}
+                    <div className="flex gap-4 p-3.5 rounded-xl text-xs">
+                      <div className="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-500 flex items-center justify-center shrink-0">
+                        <Users className="w-4.5 h-4.5" />
+                      </div>
+                      <div className="flex-1 space-y-1">
+                        <div className="flex justify-between items-center">
+                          <span className={`font-extrabold ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>Sesi Shift Dimulai</span>
+                          <span className="text-[9px] text-slate-400 font-mono">07:00 WITA</span>
+                        </div>
+                        <p className="text-slate-400 leading-relaxed font-sans">
+                          Barista <span className="font-semibold text-slate-300">Sarah Meisya</span> & Chef <span className="font-semibold text-slate-300">Rahmat Hidayat</span> berhasil check-in kehadiran kerja untuk shift pagi.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-4 p-3.5 rounded-xl text-xs">
+                      <div className="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-500 flex items-center justify-center shrink-0">
+                        <Tag className="w-4.5 h-4.5" />
+                      </div>
+                      <div className="flex-1 space-y-1">
+                        <div className="flex justify-between items-center">
+                          <span className={`font-extrabold ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>Pembaruan Kampanye Promosi</span>
+                          <span className="text-[9px] text-slate-400 font-mono">Kemarin</span>
+                        </div>
+                        <p className="text-slate-400 leading-relaxed font-sans">
+                          Promosi kode diskon spesial <span className="font-bold text-cyan-400">KULLEKAREN</span> otomatis diaktifkan untuk para pelanggan setia Kulle Kopi.
+                        </p>
+                      </div>
+                    </div>
+
+                  </div>
                 </div>
 
               </div>
+
 
             </div>
           )}
