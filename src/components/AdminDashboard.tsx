@@ -17,6 +17,8 @@ import { supabase } from '../supabaseClient';
 // @ts-ignore
 import logoImg from '../assets/images/regenerated_image_1780051135628.png';
 // @ts-ignore
+import heroImg1 from '../assets/images/regenerated_image_1781558986012.jpg';
+// @ts-ignore
 import heroImg2 from '../assets/images/regenerated_image_1781558986012.jpg';
 // @ts-ignore
 import heroImg3 from '../assets/images/regenerated_image_1781558820689.jpg';
@@ -375,7 +377,7 @@ export default function AdminDashboard({
             price: Number(menuFormPrice),
             description: menuFormDesc,
             category: menuFormCategory,
-            image: menuFormImage || 'https://images.unsplash.com/photo-1541167760496-1628856ab772?auto=format&fit=crop&w=400&q=80',
+            image: menuFormImage || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="400" height="300"><rect width="400" height="300" fill="%25230F52BA"/><circle cx="200" cy="150" r="80" fill="%2523FFFFFF" opacity="0.15"/><path d="M160 110 L240 110 L240 180 C240 210, 160 210, 160 180 Z" fill="none" stroke="%2523FFFFFF" stroke-width="8"/><path d="M240 130 C265 130, 265 160, 240 160" fill="none" stroke="%2523FFFFFF" stroke-width="8"/><text x="200" y="245" font-family="sans-serif" font-weight="bold" font-size="14" fill="%2523FFFFFF" text-anchor="middle">KULLE KOPI</text></svg>',
             stock: Number(menuFormStock),
             isBestSeller: menuFormBestSeller
           };
@@ -391,7 +393,7 @@ export default function AdminDashboard({
         price: Number(menuFormPrice),
         description: menuFormDesc,
         category: menuFormCategory,
-        image: menuFormImage || 'https://images.unsplash.com/photo-1541167760496-1628856ab772?auto=format&fit=crop&w=400&q=80',
+        image: menuFormImage || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="400" height="300"><rect width="400" height="300" fill="%25230F52BA"/><circle cx="200" cy="150" r="80" fill="%2523FFFFFF" opacity="0.15"/><path d="M160 110 L240 110 L240 180 C240 210, 160 210, 160 180 Z" fill="none" stroke="%2523FFFFFF" stroke-width="8"/><path d="M240 130 C265 130, 265 160, 240 160" fill="none" stroke="%2523FFFFFF" stroke-width="8"/><text x="200" y="245" font-family="sans-serif" font-weight="bold" font-size="14" fill="%2523FFFFFF" text-anchor="middle">KULLE KOPI</text></svg>',
         rating: 5.0,
         reviewsCount: 1,
         stock: Number(menuFormStock),
@@ -526,7 +528,7 @@ export default function AdminDashboard({
       email: empEmail,
       shift: empShift as any,
       status: 'active',
-      avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'
+      avatar: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100"><circle cx="50" cy="50" r="50" fill="%25233B82F6"/><text x="50" y="58" font-family="sans-serif" font-weight="bold" font-size="32" fill="%2523FFF" text-anchor="middle">E</text></svg>'
     };
     onUpdateEmployees([...employees, newItem]);
     setEmpFormOpen(false);
@@ -545,7 +547,7 @@ export default function AdminDashboard({
       discountPercent: Number(promoDisc),
       isActive: true,
       type: promoType,
-      bannerImage: 'https://images.unsplash.com/photo-1510972527409-cef1903972fa?auto=format&fit=crop&w=600&q=80',
+      bannerImage: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400" width="1200" height="400"><rect width="1200" height="400" fill="%25231E293B"/><circle cx="600" cy="200" r="150" fill="%25230F52BA" opacity="0.3"/><text x="600" y="210" font-family="sans-serif" font-weight="bold" font-size="42" fill="%252338BDF8" text-anchor="middle">PROMOSI KULLE KOPI</text></svg>',
       validUntil: '2026-12-31'
     };
     onUpdatePromotions([...promotions, newItem]);
@@ -678,7 +680,7 @@ export default function AdminDashboard({
     setReviewFormComment('');
     setReviewFormRating(5);
     setReviewFormDate(new Date().toISOString().split('T')[0]);
-    setReviewFormAvatar('https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80');
+    setReviewFormAvatar('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100"><circle cx="50" cy="50" r="50" fill="%25230F52BA"/><text x="50" y="58" font-family="sans-serif" font-weight="bold" font-size="32" fill="%2523FFF" text-anchor="middle">R</text></svg>');
     setReviewFormOpen(true);
   };
 
@@ -715,7 +717,7 @@ export default function AdminDashboard({
         comment: reviewFormComment,
         rating: Number(reviewFormRating),
         date: reviewFormDate || new Date().toISOString().split('T')[0],
-        avatar: reviewFormAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'
+        avatar: reviewFormAvatar || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100"><circle cx="50" cy="50" r="50" fill="%25230F52BA"/><text x="50" y="58" font-family="sans-serif" font-weight="bold" font-size="32" fill="%2523FFF" text-anchor="middle">R</text></svg>'
       };
       onUpdateReviews([newItem, ...reviews]);
     }
@@ -756,7 +758,7 @@ export default function AdminDashboard({
     setCustFormPhone('');
     setCustFormTotalOrders(0);
     setCustFormTotalSpent(0);
-    setCustFormAvatar('https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80');
+    setCustFormAvatar('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100"><circle cx="50" cy="50" r="50" fill="%25230F52BA"/><text x="50" y="58" font-family="sans-serif" font-weight="bold" font-size="32" fill="%2523FFF" text-anchor="middle">C</text></svg>');
     setCustFormOpen(true);
   };
 
@@ -767,7 +769,7 @@ export default function AdminDashboard({
     setCustFormPhone(item.phone);
     setCustFormTotalOrders(item.totalOrders);
     setCustFormTotalSpent(item.totalSpent);
-    setCustFormAvatar(item.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80');
+    setCustFormAvatar(item.avatar || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100"><circle cx="50" cy="50" r="50" fill="%25230F52BA"/><text x="50" y="58" font-family="sans-serif" font-weight="bold" font-size="32" fill="%2523FFF" text-anchor="middle">C</text></svg>');
     setCustFormOpen(true);
   };
 
@@ -805,7 +807,7 @@ export default function AdminDashboard({
         phone: custFormPhone,
         totalOrders: Number(custFormTotalOrders) || 0,
         totalSpent: Number(custFormTotalSpent) || 0,
-        avatar: custFormAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80',
+        avatar: custFormAvatar || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100"><circle cx="50" cy="50" r="50" fill="%25230F52BA"/><text x="50" y="58" font-family="sans-serif" font-weight="bold" font-size="32" fill="%2523FFF" text-anchor="middle">C</text></svg>',
         lastOrder: new Date().toLocaleDateString('id-ID')
       };
       if (onUpdateCustomers) {
@@ -2359,13 +2361,7 @@ export default function AdminDashboard({
                         <span className="text-[9px] font-mono text-slate-500">Image #1</span>
                       </div>
                       <div className="relative aspect-video rounded-lg overflow-hidden border border-slate-800 bg-slate-900/60 group">
-                        {settingsHero1 ? (
-                          <img src={settingsHero1} className="w-full h-full object-cover" alt="Hero 1 Preview" />
-                        ) : (
-                          <div className="w-full h-full flex flex-col items-center justify-center text-slate-500 text-[10px] p-3 text-center">
-                            <span>Membuka default Unsplash Rasa Kopi</span>
-                          </div>
-                        )}
+                          <img src={settingsHero1 || heroImg1} className="w-full h-full object-cover" alt="Hero 1 Preview" />
                       </div>
                       <div className="space-y-2">
                         <div className="flex items-center gap-1.5">

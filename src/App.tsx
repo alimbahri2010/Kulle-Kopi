@@ -474,7 +474,7 @@ export default function App() {
         phone: newOrderInfo.customerPhone,
         totalOrders: 1,
         totalSpent: newOrderInfo.total,
-        avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80',
+        avatar: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100"><circle cx="50" cy="50" r="50" fill="%25230F52BA"/><text x="50" y="58" font-family="sans-serif" font-weight="bold" font-size="32" fill="%2523FFF" text-anchor="middle">C</text></svg>',
         lastOrder: new Date().toISOString().split('T')[0]
       };
       nextCustomers = [newCust, ...nextCustomers];
