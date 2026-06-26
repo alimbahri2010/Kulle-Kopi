@@ -9,7 +9,7 @@ import {
   Search, ShoppingBag, Star, Menu as Hamburger, X, 
   MapPin, Clock, Plus, Minus, Send, Phone, ArrowRight,
   Wifi, Music, Coffee, Sparkles, Heart, Check,
-  SendHorizontal, ChevronLeft, ChevronRight
+  SendHorizontal, ChevronLeft, ChevronRight, Calendar, Users
 } from 'lucide-react';
 import { MenuItem, Promotion, CafeSettings, Review, OrderItem, Order, GalleryItem } from '../types';
 // @ts-ignore
@@ -32,6 +32,7 @@ interface LandingPageProps {
   galleryPhotos?: GalleryItem[];
   reviews: Review[];
   onPlaceOrder: (order: Omit<Order, 'id' | 'status' | 'createdAt'>) => void;
+  onAddReservation?: (res: { name: string; whatsapp: string; message: string; reservationDate?: string }) => void;
   isDarkMode: boolean;
   toggleDarkMode: () => void;
   setView: (view: 'customer' | 'admin') => void;
@@ -63,6 +64,7 @@ export default function LandingPage({
   galleryPhotos = [],
   reviews,
   onPlaceOrder,
+  onAddReservation,
   isDarkMode,
   toggleDarkMode,
   setView
@@ -117,9 +119,27 @@ export default function LandingPage({
 
   // Form States
   const [contactName, setContactName] = useState('');
-  const [contactEmail, setContactEmail] = useState('');
+  const [contactWhatsapp, setContactWhatsapp] = useState('');
+  const [contactDate, setContactDate] = useState('');
   const [contactMessage, setContactMessage] = useState('');
   const [contactSubmitted, setContactSubmitted] = useState(false);
+  
+  // Premium Reservation Form states (OpenTable, Airbnb, Apple inspired)
+  const [selectedDate, setSelectedDate] = useState<string>(() => {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  });
+  const [selectedTime, setSelectedTime] = useState<string>('19:00');
+  const [isCustomDate, setIsCustomDate] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (selectedDate && selectedTime) {
+      setContactDate(`${selectedDate}T${selectedTime}`);
+    }
+  }, [selectedDate, selectedTime]);
   
   // WhatsApp Quick Chat State
   const [isWhatsAppOpen, setIsWhatsAppOpen] = useState(false);
@@ -199,11 +219,27 @@ export default function LandingPage({
 
   const handleContactSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (onAddReservation) {
+      onAddReservation({
+        name: contactName,
+        whatsapp: contactWhatsapp,
+        message: contactMessage,
+        reservationDate: contactDate || undefined
+      });
+    }
     setContactSubmitted(true);
     setTimeout(() => {
       setContactName('');
-      setContactEmail('');
+      setContactWhatsapp('');
+      setContactDate('');
       setContactMessage('');
+      const d = new Date();
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      setSelectedDate(`${year}-${month}-${day}`);
+      setSelectedTime('19:00');
+      setIsCustomDate(false);
       setContactSubmitted(false);
     }, 4000);
   };
@@ -232,7 +268,7 @@ export default function LandingPage({
   ];
 
   return (
-    <div id="landing-page" className={`min-h-screen font-sans transition-colors duration-500 ${isDarkMode ? 'bg-[#060D1E] text-slate-100' : 'bg-white text-gray-800'}`}>
+    <div id="landing-page" className={`min-h-screen font-sans transition-colors duration-500 ${isDarkMode ? 'dark bg-[#060D1E] text-slate-100' : 'bg-white text-gray-800'}`}>
       
       {/* 1. TOP UTILITY HEADER */}
       <div className={`text-center py-2 px-4 transition-colors text-xs tracking-widest font-mono uppercase ${isDarkMode ? 'bg-[#0a152d] text-[#0F52BA]' : 'bg-slate-100 text-[#0F52BA]'}`}>
@@ -901,7 +937,7 @@ export default function LandingPage({
                     </p>
 
                     <div>
-                      <h4 className="font-extrabold text-sm text-slate-900 dark:text-white">{reviews[currentReviewIdx].name}</h4>
+                      <h4 className={`font-extrabold text-sm ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{reviews[currentReviewIdx].name}</h4>
                       <p className="text-[10px] text-slate-400 font-mono mt-1 uppercase tracking-wider">{reviews[currentReviewIdx].date} • Penilai Terverifikasi</p>
                     </div>
                   </div>
@@ -1008,10 +1044,20 @@ export default function LandingPage({
             </div>
 
             {/* In-app Customer feedback form */}
-            <div className={`p-6 md:p-8 rounded-2xl border ${isDarkMode ? 'bg-[#0a142c] border-[#0F52BA]/15' : 'bg-slate-50 border-slate-200/50'}`}>
-              <h3 className="text-lg font-bold">Pertanyaan &amp; Reservasi Meja</h3>
+            <div className={`p-6 md:p-8 rounded-2xl border transition-all duration-300 ${
+              isDarkMode 
+                ? 'bg-slate-950/70 border-[#0F52BA]/30 backdrop-blur-xl shadow-2xl shadow-indigo-950/15' 
+                : 'bg-white border-slate-200/60 shadow-xl shadow-slate-100'
+            }`}>
+
+              <h3 className={`text-xl font-extrabold tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                Pertanyaan &amp; Reservasi Meja
+              </h3>
+              <p className="text-xs text-slate-400 mt-1 mb-6 leading-relaxed">
+                Ingin memesan meja khusus atau sekedar bertanya? Pilih jadwal dan jumlah tamu dengan asisten interaktif kami.
+              </p>
               
-              <form onSubmit={handleContactSubmit} className="mt-4 space-y-4">
+              <form onSubmit={handleContactSubmit} className="mt-4 space-y-5">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1">
                     <label className="text-[10px] font-mono uppercase tracking-wider text-slate-400">Nama Lengkap</label>
@@ -1021,49 +1067,194 @@ export default function LandingPage({
                       value={contactName}
                       onChange={(e) => setContactName(e.target.value)}
                       placeholder="contoh: Alim Bahri"
-                      className={`w-full p-2.5 text-xs rounded-lg border outline-none ${isDarkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-800'}`}
+                      className={`w-full p-2.5 text-xs rounded-lg border outline-none ${
+                        isDarkMode 
+                          ? 'bg-slate-900 border-slate-800 text-white focus:border-[#0F52BA]' 
+                          : 'bg-slate-50 border-slate-200 text-slate-800 focus:border-[#0F52BA]'
+                      }`}
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[10px] font-mono uppercase tracking-wider text-slate-400">Alamat Email</label>
+                    <label className="text-[10px] font-mono uppercase tracking-wider text-slate-400">Nomor WhatsApp</label>
                     <input
                       required
-                      type="email"
-                      value={contactEmail}
-                      onChange={(e) => setContactEmail(e.target.value)}
-                      placeholder="contoh: alimbahri@gmail.com"
-                      className={`w-full p-2.5 text-xs rounded-lg border outline-none ${isDarkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-800'}`}
+                      type="tel"
+                      value={contactWhatsapp}
+                      onChange={(e) => setContactWhatsapp(e.target.value)}
+                      placeholder="contoh: 081234567890"
+                      className={`w-full p-2.5 text-xs rounded-lg border outline-none ${
+                        isDarkMode 
+                          ? 'bg-slate-900 border-slate-800 text-white focus:border-[#0F52BA]' 
+                          : 'bg-slate-50 border-slate-200 text-slate-800 focus:border-[#0F52BA]'
+                      }`}
                     />
                   </div>
                 </div>
 
+                {/* REDESIGNED SECTION 2 & 3: Interactive Date & Time Form Grid (Inspired by OpenTable & Airbnb) */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Date Picker Section */}
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold tracking-wider text-slate-400 uppercase font-mono flex items-center justify-between">
+                      <span className="flex items-center gap-1.5">
+                        <Calendar className="w-3.5 h-3.5 text-[#0F52BA]" /> Tanggal Kedatangan
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setIsCustomDate(!isCustomDate)}
+                        className="text-[10px] text-[#0F52BA] hover:underline font-semibold"
+                      >
+                        {isCustomDate ? "Gunakan Hari Ini" : "Pilih Tanggal Lain"}
+                      </button>
+                    </label>
+
+                    {!isCustomDate ? (
+                      <div className="flex gap-2 overflow-x-auto pb-1.5 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-800">
+                        {(() => {
+                          const days = [];
+                          const indonesianDays = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+                          const indonesianMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+                          
+                          for (let i = 0; i < 6; i++) {
+                            const d = new Date();
+                            d.setDate(d.getDate() + i);
+                            
+                            const year = d.getFullYear();
+                            const month = String(d.getMonth() + 1).padStart(2, '0');
+                            const dayNum = String(d.getDate()).padStart(2, '0');
+                            const dateStr = `${year}-${month}-${dayNum}`;
+                            
+                            let label = '';
+                            if (i === 0) label = 'Hari Ini';
+                            else if (i === 1) label = 'Besok';
+                            else label = indonesianDays[d.getDay()];
+                            
+                            days.push({
+                              dateStr,
+                              dayLabel: label,
+                              dateLabel: `${d.getDate()} ${indonesianMonths[d.getMonth()]}`,
+                            });
+                          }
+                          
+                          return days.map((day) => {
+                            const isActive = selectedDate === day.dateStr;
+                            return (
+                              <button
+                                key={day.dateStr}
+                                type="button"
+                                onClick={() => setSelectedDate(day.dateStr)}
+                                className={`flex-shrink-0 min-w-[70px] py-1.5 px-2.5 rounded-xl border flex flex-col items-center justify-center transition-all duration-200 ${
+                                  isActive
+                                    ? 'bg-gradient-to-tr from-[#0F52BA] to-blue-500 border-transparent text-white shadow-lg shadow-blue-500/15 scale-105'
+                                    : isDarkMode
+                                      ? 'bg-slate-900/60 border-slate-800 text-slate-300 hover:border-slate-700 hover:bg-slate-800/40'
+                                      : 'bg-slate-50 border-slate-200 text-slate-700 hover:border-[#0F52BA]/30 hover:bg-slate-100/60'
+                                }`}
+                              >
+                                <span className="text-[8px] font-mono uppercase opacity-75">{day.dayLabel}</span>
+                                <span className="text-xs font-bold mt-0.5">{day.dateLabel}</span>
+                              </button>
+                            );
+                          });
+                        })()}
+                      </div>
+                    ) : (
+                      <motion.div
+                        initial={{ opacity: 0, y: -5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="relative"
+                      >
+                        <input
+                          type="date"
+                          required
+                          value={selectedDate}
+                          onChange={(e) => setSelectedDate(e.target.value)}
+                          className={`w-full p-2.5 text-xs rounded-xl border outline-none ${
+                            isDarkMode 
+                              ? 'bg-slate-900 border-slate-800 text-white [color-scheme:dark]' 
+                              : 'bg-slate-50 border-slate-200 text-slate-800'
+                          }`}
+                        />
+                      </motion.div>
+                    )}
+                  </div>
+
+                  {/* Time Picker Section */}
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold tracking-wider text-slate-400 uppercase font-mono flex items-center justify-between">
+                      <span className="flex items-center gap-1.5">
+                        <Clock className="w-3.5 h-3.5 text-[#0F52BA]" /> Jam Kedatangan
+                      </span>
+                    </label>
+                    
+                    <div className="grid grid-cols-4 gap-1.5">
+                      {["10:00", "12:00", "14:00", "16:00", "18:00", "19:00", "20:00"].map((time) => {
+                        const isActive = selectedTime === time;
+                        return (
+                          <button
+                            key={time}
+                            type="button"
+                            onClick={() => setSelectedTime(time)}
+                            className={`py-1.5 text-[11px] font-bold rounded-lg border transition-all duration-200 text-center ${
+                              isActive
+                                ? 'bg-gradient-to-tr from-[#0F52BA] to-blue-500 border-transparent text-white shadow-lg shadow-blue-500/15'
+                                : isDarkMode
+                                  ? 'bg-slate-900/60 border-slate-800 text-slate-300 hover:border-slate-700 hover:bg-slate-800/40'
+                                  : 'bg-slate-50 border-slate-200 text-slate-700 hover:border-[#0F52BA]/30 hover:bg-slate-100/60'
+                            }`}
+                          >
+                            {time}
+                          </button>
+                        );
+                      })}
+                      <div>
+                        <input
+                          type="time"
+                          value={selectedTime}
+                          onChange={(e) => setSelectedTime(e.target.value)}
+                          className={`w-full py-1 text-center text-xs font-bold rounded-lg border outline-none h-full min-h-[30px] ${
+                            isDarkMode 
+                              ? 'bg-slate-900 border-slate-800 text-white [color-scheme:dark]' 
+                              : 'bg-slate-50 border-slate-200 text-slate-800'
+                          }`}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Message input */}
                 <div className="space-y-1">
-                  <label className="text-[10px] font-mono uppercase tracking-wider text-slate-400">Pesan / Permintaan</label>
+                  <label className="text-[10px] font-mono uppercase tracking-wider text-slate-400">Pesan / Detail Permintaan Meja</label>
                   <textarea
                     required
                     rows={3}
                     value={contactMessage}
                     onChange={(e) => setContactMessage(e.target.value)}
-                    placeholder="Tulis pertanyaan atau jadwal reservasi meja Anda di sini..."
-                    className={`w-full p-2.5 text-xs rounded-lg border outline-none resize-none ${isDarkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-800'}`}
+                    placeholder="Tulis pertanyaan atau rincian tambahan (misal: dekorasi ulang tahun, alergi, atau pilihan meja khusus)..."
+                    className={`w-full p-2.5 text-xs rounded-lg border outline-none resize-none ${
+                      isDarkMode 
+                        ? 'bg-slate-900 border-slate-800 text-white focus:border-[#0F52BA]' 
+                        : 'bg-slate-50 border-slate-200 text-slate-800 focus:border-[#0F52BA]'
+                    }`}
                   />
                 </div>
 
                 <button
                   id="submit-contact"
                   type="submit"
-                  className="w-full py-2.5 bg-gradient-to-tr from-[#0F52BA] to-blue-500 hover:brightness-110 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2 transition-all shadow"
+                  className="w-full py-3 bg-gradient-to-r from-[#0F52BA] to-[#3a7bd5] hover:brightness-110 active:scale-[0.99] text-white font-extrabold text-xs rounded-xl flex items-center justify-center gap-2 transition-all shadow-md shadow-blue-500/10 uppercase tracking-wider"
                 >
-                  <Send className="w-4 h-4" /> KIRIM PERTANYAAN
+                  <Send className="w-4 h-4" /> KIRIM RESERVASI SEKARANG
                 </button>
 
                 {contactSubmitted && (
                   <motion.p 
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="text-xs text-emerald-500 font-bold text-center mt-2"
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-xs text-emerald-500 font-extrabold text-center mt-2 flex items-center justify-center gap-1"
                   >
-                    ✓ Terima kasih! Tim kami akan menghubungi Anda kembali lewat email dalam waktu 24 jam.
+                    <span>✓ Reservasi berhasil terkirim! Tim Kulle Kopi akan mengonfirmasi via email segera.</span>
                   </motion.p>
                 )}
               </form>

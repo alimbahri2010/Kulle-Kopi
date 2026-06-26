@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { MenuItem, Order, Customer, InventoryItem, Employee, Promotion, CafeSettings, OrderItem, GalleryItem, Review } from './types';
+import { MenuItem, Order, Customer, InventoryItem, Employee, Promotion, CafeSettings, OrderItem, GalleryItem, Review, Reservation } from './types';
 import { 
   INITIAL_MENU_ITEMS, 
   INITIAL_ORDERS, 
@@ -14,7 +14,8 @@ import {
   INITIAL_PROMOTIONS, 
   INITIAL_REVIEWS,
   INITIAL_SETTINGS,
-  INITIAL_GALLERY_PHOTOS
+  INITIAL_GALLERY_PHOTOS,
+  INITIAL_RESERVATIONS
 } from './initialData';
 import LandingPage from './components/LandingPage';
 import AdminDashboard from './components/AdminDashboard';
@@ -86,6 +87,7 @@ export default function App() {
   const [settings, setSettings] = useState<CafeSettings>(INITIAL_SETTINGS);
   const [galleryPhotos, setGalleryPhotos] = useState<GalleryItem[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [reservations, setReservations] = useState<Reservation[]>([]);
 
   // Load state from Supabase or fallback to Local Storage / INITIAL_DATA
   useEffect(() => {
@@ -201,6 +203,9 @@ export default function App() {
 
         const storedPromos = localStorage.getItem('kulle_promotions');
         setPromotions(storedPromos ? JSON.parse(storedPromos) : INITIAL_PROMOTIONS);
+
+        const storedReservations = localStorage.getItem('kulle_reservations');
+        setReservations(storedReservations ? JSON.parse(storedReservations) : INITIAL_RESERVATIONS);
 
       } catch (e) {
         console.error('Error loading bootstrap data:', e);
@@ -399,8 +404,36 @@ export default function App() {
     }
   };
 
+  const handleAddReservation = (newRes: { name: string; whatsapp: string; message: string; reservationDate?: string }) => {
+    const reservation: Reservation = {
+      id: 'res-' + Date.now(),
+      name: newRes.name,
+      whatsapp: newRes.whatsapp,
+      message: newRes.message,
+      reservationDate: newRes.reservationDate,
+      status: 'Pending',
+      createdAt: new Date().toISOString()
+    };
+    const updated = [reservation, ...reservations];
+    setReservations(updated);
+    try {
+      localStorage.setItem('kulle_reservations', JSON.stringify(updated));
+    } catch (e) {
+      console.warn('Gagal menyimpan reservasi ke LocalStorage.', e);
+    }
+  };
+
+  const handleUpdateReservations = (updated: Reservation[]) => {
+    setReservations(updated);
+    try {
+      localStorage.setItem('kulle_reservations', JSON.stringify(updated));
+    } catch (e) {
+      console.warn('Gagal menyimpan reservasi ke LocalStorage.', e);
+    }
+  };
+
   const handleDeleteSeededData = async () => {
-    if (confirm("Apakah Anda yakin ingin menghapus semua data contoh? Ini akan mengosongkan semua menu, ulasan, pesanan, pelanggan, inventaris, promosi, dan galeri untuk memulai dari awal.")) {
+    if (confirm("Apakah Anda yakin ingin menghapus semua data contoh? Ini akan mengosongkan semua menu, ulasan, pesanan, pelanggan, inventaris, promosi, galeri, dan reservasi untuk memulai dari awal.")) {
       // Clear localStorage
       localStorage.setItem('kulle_menu_items', JSON.stringify([]));
       localStorage.setItem('kulle_orders', JSON.stringify([]));
@@ -410,6 +443,7 @@ export default function App() {
       localStorage.setItem('kulle_promotions', JSON.stringify([]));
       localStorage.setItem('kulle_gallery_photos', JSON.stringify([]));
       localStorage.setItem('kulle_reviews', JSON.stringify([]));
+      localStorage.setItem('kulle_reservations', JSON.stringify([]));
       
       // Reset local states
       setMenuItems([]);
@@ -420,6 +454,7 @@ export default function App() {
       setPromotions([]);
       setGalleryPhotos([]);
       setReviews([]);
+      setReservations([]);
 
       // Clear Supabase tables if connected
       try {
@@ -546,6 +581,7 @@ export default function App() {
           galleryPhotos={galleryPhotos}
           reviews={reviews}
           onPlaceOrder={handlePlaceOrder}
+          onAddReservation={handleAddReservation}
           isDarkMode={isDarkMode}
           toggleDarkMode={toggleDarkMode}
           setView={handleSetView}
@@ -561,6 +597,7 @@ export default function App() {
           settings={settings}
           galleryPhotos={galleryPhotos}
           reviews={reviews}
+          reservations={reservations}
           onUpdateMenu={handleUpdateMenu}
           onUpdateOrders={handleUpdateOrders}
           onUpdateCustomers={handleUpdateCustomers}
@@ -570,6 +607,7 @@ export default function App() {
           onUpdateSettings={handleUpdateSettings}
           onUpdateGallery={handleUpdateGallery}
           onUpdateReviews={handleUpdateReviews}
+          onUpdateReservations={handleUpdateReservations}
           onDeleteSeededData={handleDeleteSeededData}
           isDarkMode={isDarkMode}
           toggleDarkMode={toggleDarkMode}

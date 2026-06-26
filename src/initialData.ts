@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { MenuItem, Review, Order, Customer, InventoryItem, Employee, Promotion, CafeSettings, GalleryItem } from './types';
+import { MenuItem, Review, Order, Customer, InventoryItem, Employee, Promotion, CafeSettings, GalleryItem, Reservation } from './types';
 
 export const INITIAL_MENU_ITEMS: MenuItem[] = [
   {
@@ -318,3 +318,34 @@ export const INITIAL_GALLERY_PHOTOS: GalleryItem[] = [
   { id: 'g5', url: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600"><rect width="800" height="600" fill="%25232C1D11"/><rect x="150" y="150" width="500" height="300" rx="20" fill="%25234A2E1B" stroke="%2523A16207" stroke-width="4"/><text x="400" y="310" font-family="sans-serif" font-weight="bold" font-size="24" fill="%2523F8FAFC" text-anchor="middle">EKSTRAKSI ESPRESSO KHAS KULLE</text></svg>', title: 'Ekstraksi Espresso Khas Kulle', category: 'seduh' },
   { id: 'g6', url: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600"><rect width="800" height="600" fill="%25237C2D12"/><rect x="150" y="150" width="500" height="300" rx="20" fill="%25239A3412" stroke="%2523F97316" stroke-width="4"/><text x="400" y="310" font-family="sans-serif" font-weight="bold" font-size="24" fill="%2523F8FAFC" text-anchor="middle">NASI GORENG KULLE YANG LEZAT</text></svg>', title: 'Nasi Goreng Kulle yang Lezat', category: 'kuliner' }
 ];
+
+export const INITIAL_RESERVATIONS: Reservation[] = [
+  {
+    id: 'res-1',
+    name: 'Andi Wijaya',
+    whatsapp: '081234567890',
+    message: 'Reservasi meja untuk 4 orang pada hari Sabtu ini jam 19.00 Wita. Dekat jendela kalau bisa.',
+    reservationDate: '2026-06-27T19:00',
+    status: 'Pending',
+    createdAt: '2026-06-25T14:30:00Z'
+  },
+  {
+    id: 'res-2',
+    name: 'Siti Nurhaliza',
+    whatsapp: '082345678901',
+    message: 'Apakah ada ruangan private/VIP untuk rapat kecil kapasitas 8-10 orang beserta fasilitas proyektor?',
+    reservationDate: '2026-06-29T10:00',
+    status: 'Dihubungi',
+    createdAt: '2026-06-26T08:15:00Z'
+  },
+  {
+    id: 'res-3',
+    name: 'Budi Santoso',
+    whatsapp: '085678901234',
+    message: 'Konfirmasi reservasi meja no 12 untuk ulang tahun jam 16.00 besok sore.',
+    reservationDate: '2026-06-27T16:00',
+    status: 'Dikonfirmasi',
+    createdAt: '2026-06-24T11:20:00Z'
+  }
+];
+

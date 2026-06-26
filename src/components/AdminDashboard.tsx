@@ -12,7 +12,7 @@ import {
   Tag, Compass, Sparkles, Filter, ToggleLeft, Edit, Trash2, CheckCircle2,
   DollarSign, RefreshCcw, Landmark, Upload, Image, Info, MessageSquare, Star
  } from 'lucide-react';
-import { MenuItem, Order, Customer, InventoryItem, Employee, Promotion, CafeSettings, OrderStatus, Category, GalleryItem, Review } from '../types';
+import { MenuItem, Order, Customer, InventoryItem, Employee, Promotion, CafeSettings, OrderStatus, Category, GalleryItem, Review, Reservation } from '../types';
 import { supabase } from '../supabaseClient';
 // @ts-ignore
 import logoImg from '../assets/images/regenerated_image_1780051135628.png';
@@ -35,6 +35,7 @@ interface AdminDashboardProps {
   settings: CafeSettings;
   galleryPhotos: GalleryItem[];
   reviews: Review[];
+  reservations?: Reservation[];
   onUpdateMenu: (updated: MenuItem[]) => void;
   onUpdateOrders: (updated: Order[]) => void;
   onUpdateCustomers?: (updated: Customer[]) => void;
@@ -44,6 +45,7 @@ interface AdminDashboardProps {
   onUpdateSettings: (settings: CafeSettings) => void;
   onUpdateGallery: (updated: GalleryItem[]) => void;
   onUpdateReviews: (updated: Review[]) => void;
+  onUpdateReservations?: (updated: Reservation[]) => void;
   onDeleteSeededData?: () => void;
   isDarkMode: boolean;
   toggleDarkMode: () => void;
@@ -60,6 +62,7 @@ export default function AdminDashboard({
   settings,
   galleryPhotos,
   reviews,
+  reservations = [],
   onUpdateMenu,
   onUpdateOrders,
   onUpdateCustomers,
@@ -69,6 +72,7 @@ export default function AdminDashboard({
   onUpdateSettings,
   onUpdateGallery,
   onUpdateReviews,
+  onUpdateReservations,
   onDeleteSeededData,
   isDarkMode,
   toggleDarkMode,
@@ -188,6 +192,13 @@ export default function AdminDashboard({
   const [promoDesc, setPromoDesc] = useState('');
   const [promoDisc, setPromoDisc] = useState(15);
   const [promoType, setPromoType] = useState<'discount' | 'event' | 'campaign'>('discount');
+
+  // Reservations / Inquiries states
+  const [resFormOpen, setResFormOpen] = useState(false);
+  const [newResName, setNewResName] = useState('');
+  const [newResWhatsapp, setNewResWhatsapp] = useState('');
+  const [newResDate, setNewResDate] = useState('');
+  const [newResMessage, setNewResMessage] = useState('');
 
   // Cafe Settings State Modification
   const [settingsBrand, setSettingsBrand] = useState(settings.brandName);
@@ -1156,7 +1167,6 @@ export default function AdminDashboard({
               { id: 'menu', label: 'Katalog Menu', icon: <UtensilsCrossed className="w-4.5 h-4.5" /> },
               { id: 'orders', label: 'Kelola Pesanan', icon: <ShoppingBag className="w-4.5 h-4.5" /> },
               { id: 'customers', label: 'Data Pelanggan', icon: <Users className="w-4.5 h-4.5" /> },
-              { id: 'analytics', label: 'Analitik Penjualan', icon: <BarChart3 className="w-4.5 h-4.5" /> },
               { id: 'inventory', label: 'Stok Bahan Baku', icon: <PackageOpen className="w-4.5 h-4.5" /> },
               { id: 'gallery', label: 'Edit Galeri', icon: <Image className="w-4.5 h-4.5" /> },
               { id: 'about_kulle', label: 'Tentang Kulle', icon: <Info className="w-4.5 h-4.5" /> },
@@ -1388,85 +1398,214 @@ export default function AdminDashboard({
                     </div>
                   </div>
 
-                  {/* CHART 2: Daily Revenue Line Chart (Tren Pendapatan Harian) */}
+                  {/* CHART 2 / ELEMENT 2: Reservasi & Pertanyaan Meja */}
                   <div className={`p-6 rounded-2xl border flex flex-col justify-between transition-all ${isDarkMode ? 'bg-[#0a142c] border-[#0F52BA]/15 shadow-xl shadow-black/20' : 'bg-white border-slate-200/80 shadow-sm'}`}>
                     <div>
-                      <div className="flex justify-between items-start mb-2">
+                      <div className="flex justify-between items-start mb-4">
                         <div>
-                          <span className="text-[10px] font-bold uppercase tracking-widest font-mono text-emerald-500">SALES & REVENUE</span>
-                          <h3 className={`font-extrabold text-base tracking-tight mt-0.5 ${isDarkMode ? 'text-white' : 'text-slate-950'}`}>Tren Pendapatan Harian</h3>
+                          <span className="text-[10px] font-bold uppercase tracking-widest font-mono text-emerald-500">BOOKING & INQUIRIES</span>
+                          <h3 className={`font-extrabold text-base tracking-tight mt-0.5 ${isDarkMode ? 'text-white' : 'text-slate-950'}`}>Reservasi & Pertanyaan Meja</h3>
                         </div>
-                        <span className={`px-2 py-0.5 text-[9px] font-extrabold uppercase font-mono rounded-md ${isDarkMode ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-emerald-50 text-emerald-600 border border-emerald-200'}`}>
-                          Kalkulasi Otomatis
+                        <button
+                          onClick={() => setResFormOpen(!resFormOpen)}
+                          className="px-2 py-1 bg-[#0F52BA] hover:bg-[#0F52BA]/90 text-white text-[10px] font-extrabold rounded uppercase flex items-center gap-1 transition-all"
+                        >
+                          <Plus className="w-3 h-3" /> Tambah
+                        </button>
+                      </div>
+
+                      <div className="flex items-center gap-3 mb-4">
+                        <span className={`px-2.5 py-1 text-[10px] font-bold rounded-lg border ${isDarkMode ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-amber-50 text-amber-700 border-amber-100'}`}>
+                          {reservations.filter(r => r.status === 'Pending').length} Pending
+                        </span>
+                        <span className={`px-2.5 py-1 text-[10px] font-bold rounded-lg border ${isDarkMode ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-emerald-50 text-emerald-700 border-emerald-100'}`}>
+                          {reservations.filter(r => r.status === 'Dikonfirmasi').length} Dikonfirmasi
+                        </span>
+                        <span className={`px-2.5 py-1 text-[10px] font-bold rounded-lg border ${isDarkMode ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' : 'bg-blue-50 text-blue-700 border-blue-100'}`}>
+                          {reservations.filter(r => r.status === 'Dihubungi').length} Dihubungi
                         </span>
                       </div>
 
-                      <div className="flex items-baseline gap-2 mt-2 mb-4">
-                        <span className={`text-2xl font-extrabold font-mono tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
-                          Rp {orders.filter(o => o.status === 'completed').reduce((sum, o) => sum + o.total, 0).toLocaleString('id-ID')}
-                        </span>
-                        <span className="text-xs text-emerald-500 font-bold flex items-center gap-0.5">
-                          ↑ 14.5% <span className="text-[10px] text-slate-400 font-normal font-sans">Selesai Terjual</span>
-                        </span>
+                      {/* Manual Reservation / Inquiry Addition Modal / Inline Form */}
+                      <AnimatePresence>
+                        {resFormOpen && (
+                          <motion.div 
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className={`p-4 rounded-xl mb-4 border text-xs overflow-hidden ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-slate-50 border-slate-200'}`}
+                          >
+                            <div className="flex justify-between items-center mb-3">
+                              <h4 className="font-bold">Tambah Reservasi Baru</h4>
+                              <button onClick={() => setResFormOpen(false)} className="text-slate-400 hover:text-rose-500">
+                                <X className="w-4 h-4" />
+                              </button>
+                            </div>
+                            <form onSubmit={(e) => {
+                              e.preventDefault();
+                              if (!newResName || !newResWhatsapp || !newResMessage) return;
+                              const newReservation: Reservation = {
+                                id: 'res-' + Date.now(),
+                                name: newResName,
+                                whatsapp: newResWhatsapp,
+                                message: newResMessage,
+                                reservationDate: newResDate || undefined,
+                                status: 'Pending',
+                                createdAt: new Date().toISOString()
+                              };
+                              if (onUpdateReservations) {
+                                onUpdateReservations([newReservation, ...reservations]);
+                              }
+                              setNewResName('');
+                              setNewResWhatsapp('');
+                              setNewResDate('');
+                              setNewResMessage('');
+                              setResFormOpen(false);
+                            }} className="space-y-3">
+                              <div>
+                                <label className="text-[9px] uppercase font-mono tracking-wider text-slate-400 block mb-1">Nama Pelanggan</label>
+                                <input
+                                  required
+                                  type="text"
+                                  placeholder="Nama Pelanggan"
+                                  value={newResName}
+                                  onChange={(e) => setNewResName(e.target.value)}
+                                  className={`w-full p-2 text-xs rounded-lg border outline-none ${isDarkMode ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-200'}`}
+                                />
+                              </div>
+                              <div>
+                                <label className="text-[9px] uppercase font-mono tracking-wider text-slate-400 block mb-1">Nomor WhatsApp</label>
+                                <input
+                                  required
+                                  type="tel"
+                                  placeholder="contoh: 081234567890"
+                                  value={newResWhatsapp}
+                                  onChange={(e) => setNewResWhatsapp(e.target.value)}
+                                  className={`w-full p-2 text-xs rounded-lg border outline-none ${isDarkMode ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-200'}`}
+                                />
+                              </div>
+                              <div>
+                                <label className="text-[9px] uppercase font-mono tracking-wider text-slate-400 block mb-1">Jadwal Tanggal &amp; Jam Reservasi (Opsional)</label>
+                                <input
+                                  type="datetime-local"
+                                  value={newResDate}
+                                  onChange={(e) => setNewResDate(e.target.value)}
+                                  className={`w-full p-2 text-xs rounded-lg border outline-none ${isDarkMode ? 'bg-slate-950 border-slate-800 text-white [color-scheme:dark]' : 'bg-white border-slate-200'}`}
+                                />
+                              </div>
+                              <div>
+                                <label className="text-[9px] uppercase font-mono tracking-wider text-slate-400 block mb-1">Detail Pesan / Meja / Jam</label>
+                                <textarea
+                                  required
+                                  placeholder="Detail Pesan / Meja / Jam"
+                                  value={newResMessage}
+                                  onChange={(e) => setNewResMessage(e.target.value)}
+                                  rows={2}
+                                  className={`w-full p-2 text-xs rounded-lg border outline-none resize-none ${isDarkMode ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-200'}`}
+                                />
+                              </div>
+                              <button type="submit" className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg transition-colors">
+                                Simpan Reservasi
+                              </button>
+                            </form>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+
+                      {/* Reservations scrollable list */}
+                      <div className="max-h-[310px] overflow-y-auto pr-1 space-y-3 scrollbar-thin scrollbar-thumb-slate-200">
+                        {reservations.length === 0 ? (
+                          <div className="text-center py-10 text-xs text-slate-400">
+                            Belum ada reservasi atau pertanyaan meja masuk.
+                          </div>
+                        ) : (
+                          reservations.map((res) => (
+                            <div 
+                              key={res.id} 
+                              className={`p-3.5 rounded-xl border transition-all ${isDarkMode ? 'bg-slate-950/40 border-slate-800/80 hover:border-[#0F52BA]/35' : 'bg-slate-50/50 border-slate-150 hover:border-slate-250'}`}
+                            >
+                              <div className="flex justify-between items-start gap-2 mb-1.5">
+                                <div>
+                                  <h4 className={`font-bold text-xs ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{res.name}</h4>
+                                  <div className="flex items-center gap-1 mt-0.5">
+                                    <span className="text-[10px] text-emerald-500 font-bold">WA:</span>
+                                    <a 
+                                      href={`https://wa.me/${res.whatsapp.replace(/[^0-9]/g, '')}`} 
+                                      target="_blank" 
+                                      rel="noreferrer"
+                                      className="text-[10px] font-mono text-slate-400 hover:text-emerald-500 hover:underline transition-colors"
+                                    >
+                                      {res.whatsapp} ↗
+                                    </a>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-1.5 shrink-0">
+                                  {/* Compact Status Badges */}
+                                  <span className={`px-2 py-0.5 rounded text-[9px] font-extrabold uppercase font-mono border ${
+                                    res.status === 'Pending' ? (isDarkMode ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-amber-50 text-amber-700 border-amber-200') :
+                                    res.status === 'Dikonfirmasi' ? (isDarkMode ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-emerald-50 text-emerald-700 border-emerald-200') :
+                                    res.status === 'Dihubungi' ? (isDarkMode ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' : 'bg-blue-50 text-blue-700 border-blue-200') :
+                                    (isDarkMode ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' : 'bg-rose-50 text-rose-700 border-rose-200')
+                                  }`}>
+                                    {res.status}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {res.reservationDate && (
+                                <div className={`mb-2.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 ${isDarkMode ? 'bg-amber-500/10 text-amber-400 border border-amber-500/10' : 'bg-amber-50 text-amber-800 border border-amber-100'}`}>
+                                  <Calendar className="w-3.5 h-3.5 shrink-0" />
+                                  <span>Jadwal: {new Date(res.reservationDate).toLocaleString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })} Wita</span>
+                                </div>
+                              )}
+
+                              <p className={`text-xs leading-relaxed ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>{res.message}</p>
+                              
+                              <div className="flex justify-between items-center mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-900/80">
+                                <span className="text-[9px] text-slate-400 font-mono">
+                                  {new Date(res.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                                </span>
+                                
+                                <div className="flex items-center gap-2">
+                                  {/* Status transition triggers */}
+                                  <select
+                                    value={res.status}
+                                    onChange={(e) => {
+                                      if (onUpdateReservations) {
+                                        const updated = reservations.map(r => r.id === res.id ? { ...r, status: e.target.value as Reservation['status'] } : r);
+                                        onUpdateReservations(updated);
+                                      }
+                                    }}
+                                    className={`text-[9px] font-bold py-0.5 px-1 rounded border bg-transparent outline-none cursor-pointer ${
+                                      isDarkMode ? 'border-slate-800 text-slate-300 bg-slate-950' : 'border-slate-200 text-slate-700 bg-white'
+                                    }`}
+                                  >
+                                    <option value="Pending">Pending</option>
+                                    <option value="Dikonfirmasi">Konfirmasi</option>
+                                    <option value="Dihubungi">Dihubungi</option>
+                                    <option value="Dibatalkan">Batal</option>
+                                  </select>
+
+                                  <button
+                                    onClick={() => {
+                                      if (confirm("Hapus data reservasi/pertanyaan ini?")) {
+                                        if (onUpdateReservations) {
+                                          const updated = reservations.filter(r => r.id !== res.id);
+                                          onUpdateReservations(updated);
+                                        }
+                                      }
+                                    }}
+                                    className="p-1 text-slate-400 hover:text-rose-500 rounded transition-all shrink-0"
+                                    title="Hapus"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          ))
+                        )}
                       </div>
-                    </div>
-
-                    {/* SVG Line Chart for Daily Revenue */}
-                    <div className="h-44 relative w-full flex items-end mt-2">
-                      <div className="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-[0.03] dark:opacity-[0.08]">
-                        <div className="border-t border-white w-full" />
-                        <div className="border-t border-white w-full" />
-                        <div className="border-t border-white w-full" />
-                        <div className="border-t border-white w-full" />
-                      </div>
-
-                      <svg className="w-full h-full" viewBox="0 0 500 180" preserveAspectRatio="none">
-                        <defs>
-                          <linearGradient id="revenueGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="#10b981" stopOpacity="0.3"/>
-                            <stop offset="100%" stopColor="#10b981" stopOpacity="0"/>
-                          </linearGradient>
-                        </defs>
-
-                        {/* Smooth Area Under Line */}
-                        <path 
-                          d="M 0,140 Q 41,120 83,110 T 166,135 T 250,90 T 333,70 T 416,35 T 500,15 L 500,180 L 0,180 Z" 
-                          fill="url(#revenueGrad)"
-                        />
-
-                        {/* Line Path */}
-                        <path 
-                          d="M 0,140 Q 41,120 83,110 T 166,135 T 250,90 T 333,70 T 416,35 T 500,15" 
-                          fill="none" 
-                          stroke="#10b981" 
-                          strokeWidth="3.5"
-                          strokeLinecap="round"
-                        />
-
-                        {/* Interactive glow nodes */}
-                        <circle cx="166" cy="135" r="4.5" fill="#34d399" stroke={isDarkMode ? '#0a142c' : '#fff'} strokeWidth="1.5" />
-                        <circle cx="333" cy="70" r="4.5" fill="#34d399" stroke={isDarkMode ? '#0a142c' : '#fff'} strokeWidth="1.5" />
-                        <circle cx="500" cy="15" r="4.5" fill="#34d399" stroke={isDarkMode ? '#0a142c' : '#fff'} strokeWidth="1.5" className="animate-pulse" />
-                      </svg>
-
-                      {/* Floating Tooltips */}
-                      <div className="absolute top-[52%] left-[26%] transform -translate-x-1/2 -translate-y-1/2">
-                        <span className={`px-2 py-0.5 rounded text-[9px] font-bold font-mono border ${isDarkMode ? 'bg-slate-950 text-emerald-400 border-emerald-500/30 shadow' : 'bg-white text-emerald-600 border-slate-200 shadow-sm'}`}>Rp 950rb</span>
-                      </div>
-                      <div className="absolute top-[24%] left-[64%] transform -translate-x-1/2 -translate-y-1/2">
-                        <span className={`px-2 py-0.5 rounded text-[9px] font-bold font-mono border ${isDarkMode ? 'bg-slate-950 text-emerald-400 border-emerald-500/30 shadow' : 'bg-white text-emerald-600 border-slate-200 shadow-sm'}`}>Rp 1.8jt</span>
-                      </div>
-                    </div>
-
-                    {/* Timeline labels */}
-                    <div className="flex justify-between text-[9px] font-mono text-slate-400 mt-4 border-t border-slate-100 dark:border-slate-800/60 pt-2 uppercase tracking-wider">
-                      <span>Sen</span>
-                      <span>Sel</span>
-                      <span>Rab</span>
-                      <span>Kam</span>
-                      <span>Jum</span>
-                      <span>Sab</span>
-                      <span>Min</span>
                     </div>
                   </div>
 
@@ -3013,36 +3152,29 @@ export default function AdminDashboard({
                       )}
                     </div>
 
-                    <input
-                      type="text"
-                      value={menuFormImage}
-                      onChange={(e) => setMenuFormImage(e.target.value)}
-                      placeholder="Atau tempel link URL foto..."
-                      className={`w-full p-2 rounded border text-[10px] outline-none ${isDarkMode ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-600 focus:border-cyan-400' : 'bg-slate-50 border-slate-205 placeholder-slate-400 focus:border-[#0F52BA]'}`}
-                    />
+                    {menuFormImage && (
+                      <div className="pt-1.5 flex justify-end">
+                        <button
+                          type="button"
+                          onClick={() => setMenuFormImage('')}
+                          className="text-[9px] text-red-500 hover:underline font-semibold"
+                        >
+                          Hapus Foto
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-mono uppercase text-slate-404 font-bold">Stok Awal</label>
-                    <input
-                      type="number"
-                      value={menuFormStock}
-                      onChange={(e) => setMenuFormStock(Number(e.target.value))}
-                      className={`w-full p-2 rounded border outline-none ${isDarkMode ? 'bg-slate-950 border-slate-800' : 'bg-slate-50 border-slate-205'}`}
-                    />
-                  </div>
-                  <div className="flex items-center space-x-2 pt-5">
-                    <input
-                      type="checkbox"
-                      id="best-seller-check"
-                      checked={menuFormBestSeller}
-                      onChange={(e) => setMenuFormBestSeller(e.target.checked)}
-                      className="rounded border"
-                    />
-                    <label htmlFor="best-seller-check" className="text-[10px] font-mono uppercase text-slate-405 font-bold">Tandai Menu Terlaris 🔥</label>
-                  </div>
+                <div className="flex items-center space-x-2 py-1">
+                  <input
+                    type="checkbox"
+                    id="best-seller-check"
+                    checked={menuFormBestSeller}
+                    onChange={(e) => setMenuFormBestSeller(e.target.checked)}
+                    className="rounded border"
+                  />
+                  <label htmlFor="best-seller-check" className="text-[10px] font-mono uppercase text-slate-405 font-bold">Tandai Menu Terlaris 🔥</label>
                 </div>
 
                 <div className="space-y-1">
@@ -3395,13 +3527,6 @@ export default function AdminDashboard({
                       </button>
                     </div>
                   </div>
-                  <input
-                    type="text"
-                    value={reviewFormAvatar}
-                    onChange={(e) => setReviewFormAvatar(e.target.value)}
-                    placeholder="Atau masukkan tautan URL foto..."
-                    className={`w-full p-2.5 mt-1 rounded-xl border text-[10px] outline-none ${isDarkMode ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-600 focus:border-cyan-400' : 'bg-slate-50 border-slate-200 placeholder-slate-400 focus:border-[#0F52BA]'}`}
-                  />
                 </div>
 
                 <div className="pt-2 flex gap-2">
@@ -3488,13 +3613,6 @@ export default function AdminDashboard({
                       </button>
                     </div>
                   </div>
-                  <input
-                    type="text"
-                    value={custFormAvatar}
-                    onChange={(e) => setCustFormAvatar(e.target.value)}
-                    placeholder="Atau masukkan tautan URL foto..."
-                    className={`w-full p-2.5 mt-1 rounded-xl border text-[10px] outline-none ${isDarkMode ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-600 focus:border-cyan-400' : 'bg-slate-50 border-slate-200 placeholder-slate-400 focus:border-[#0F52BA]'}`}
-                  />
                 </div>
 
                 <div className="pt-2 flex gap-2">

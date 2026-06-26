@@ -125,3 +125,14 @@ export interface GalleryItem {
   category: string;
 }
 
+export interface Reservation {
+  id: string;
+  name: string;
+  whatsapp: string;
+  message: string;
+  reservationDate?: string; // Format: YYYY-MM-DD or custom string
+  status: 'Pending' | 'Dikonfirmasi' | 'Dihubungi' | 'Dibatalkan';
+  createdAt: string;
+}
+
+
