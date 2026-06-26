@@ -21,6 +21,112 @@ import LandingPage from './components/LandingPage';
 import AdminDashboard from './components/AdminDashboard';
 import { supabase } from './supabaseClient';
 
+// Helper functions to map camelCase <-> snake_case <-> lowercase for Supabase compatibility
+function toSnakeCase(str: string): string {
+  return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+}
+
+function convertKeysToSnakeCase(obj: any): any {
+  if (Array.isArray(obj)) {
+    return obj.map(item => convertKeysToSnakeCase(item));
+  }
+  if (obj !== null && typeof obj === 'object') {
+    const newObj: any = {};
+    for (const key of Object.keys(obj)) {
+      newObj[toSnakeCase(key)] = convertKeysToSnakeCase(obj[key]);
+    }
+    return newObj;
+  }
+  return obj;
+}
+
+function convertKeysToLowercase(obj: any): any {
+  if (Array.isArray(obj)) {
+    return obj.map(item => convertKeysToLowercase(item));
+  }
+  if (obj !== null && typeof obj === 'object') {
+    const newObj: any = {};
+    for (const key of Object.keys(obj)) {
+      newObj[key.toLowerCase()] = convertKeysToLowercase(obj[key]);
+    }
+    return newObj;
+  }
+  return obj;
+}
+
+function normalizeMenuItem(row: any): MenuItem {
+  return {
+    id: row.id,
+    name: row.name || '',
+    description: row.description || '',
+    category: row.category || 'black coffee',
+    price: Number(row.price) || 0,
+    rating: Number(row.rating !== undefined ? row.rating : 5.0),
+    reviewsCount: Number(row.reviewsCount ?? row.reviews_count ?? row.reviewscount ?? 0),
+    image: row.image || '',
+    isAvailable: row.isAvailable !== undefined ? !!row.isAvailable : 
+                 row.is_available !== undefined ? !!row.is_available : 
+                 row.isavailable !== undefined ? !!row.isavailable : true,
+    isBestSeller: row.isBestSeller !== undefined ? !!row.isBestSeller : 
+                  row.is_best_seller !== undefined ? !!row.is_best_seller : 
+                  row.isbestseller !== undefined ? !!row.isbestseller : false,
+    stock: Number(row.stock !== undefined ? row.stock : 0),
+  };
+}
+
+function normalizeSettings(row: any): CafeSettings {
+  return {
+    brandName: row.brandName ?? row.brand_name ?? row.brandname ?? '',
+    tagline: row.tagline ?? '',
+    contactEmail: row.contactEmail ?? row.contact_email ?? row.contactemail ?? '',
+    contactPhone: row.contactPhone ?? row.contact_phone ?? row.contactphone ?? '',
+    address: row.address ?? '',
+    openingHours: row.openingHours ?? row.opening_hours ?? row.openinghours ?? '',
+    instagramUrl: row.instagramUrl ?? row.instagram_url ?? row.instagramurl ?? '',
+    facebookUrl: row.facebookUrl ?? row.facebook_url ?? row.facebookurl ?? '',
+    whatsappNumber: row.whatsappNumber ?? row.whatsapp_number ?? row.whatsappnumber ?? '',
+    themeColor: row.themeColor ?? row.theme_color ?? row.themecolor ?? '',
+    faviconUrl: row.faviconUrl ?? row.favicon_url ?? row.faviconurl ?? undefined,
+    aboutPill: row.aboutPill ?? row.about_pill ?? row.aboutpill ?? undefined,
+    aboutTitle: row.aboutTitle ?? row.about_title ?? row.abouttitle ?? undefined,
+    aboutDescription: row.aboutDescription ?? row.about_description ?? row.aboutdescription ?? undefined,
+    aboutFeature1Title: row.aboutFeature1Title ?? row.about_feature1_title ?? row.aboutfeature1title ?? undefined,
+    aboutFeature1Desc: row.aboutFeature1Desc ?? row.about_feature1_desc ?? row.aboutfeature1desc ?? undefined,
+    aboutFeature2Title: row.aboutFeature2Title ?? row.about_feature2_title ?? row.aboutfeature2title ?? undefined,
+    aboutFeature2Desc: row.aboutFeature2Desc ?? row.about_feature2_desc ?? row.aboutfeature2desc ?? undefined,
+    heroImageUrl1: row.heroImageUrl1 ?? row.hero_image_url1 ?? row.heroimageurl1 ?? undefined,
+    heroImageUrl2: row.heroImageUrl2 ?? row.hero_image_url2 ?? row.heroimageurl2 ?? undefined,
+    heroImageUrl3: row.heroImageUrl3 ?? row.hero_image_url3 ?? row.heroimageurl3 ?? undefined,
+    heroImageUrl4: row.heroImageUrl4 ?? row.hero_image_url4 ?? row.heroimageurl4 ?? undefined,
+    disableOrderButtons: row.disableOrderButtons !== undefined ? !!row.disableOrderButtons :
+                         row.disable_order_buttons !== undefined ? !!row.disable_order_buttons :
+                         row.disableorderbuttons !== undefined ? !!row.disableorderbuttons : false,
+  };
+}
+
+async function robustUpsert(tableName: string, data: any) {
+  // 1. Try raw (camelCase)
+  const { error } = await supabase.from(tableName).upsert(data);
+  if (!error) return { error: null };
+
+  // If error is undefined column (42703), try snake_case
+  if (error.code === '42703') {
+    const snakeData = convertKeysToSnakeCase(data);
+    const { error: snakeError } = await supabase.from(tableName).upsert(snakeData);
+    if (!snakeError) return { error: null };
+
+    // If still undefined column, try lowercase
+    if (snakeError.code === '42703') {
+      const lowerData = convertKeysToLowercase(data);
+      const { error: lowerError } = await supabase.from(tableName).upsert(lowerData);
+      if (!lowerError) return { error: null };
+      return { error: lowerError };
+    }
+    return { error: snakeError };
+  }
+  return { error };
+}
+
 export default function App() {
   // Portal View Router State ('customer' | 'admin')
   const [view, setView] = useState<'customer' | 'admin'>(() => {
@@ -114,7 +220,7 @@ export default function App() {
               .select('*')
               .maybeSingle();
             if (!errSettings && dbSettings) {
-              setSettings(dbSettings);
+              setSettings(normalizeSettings(dbSettings));
             }
           } catch (e) {
             console.log('Tabel "settings" belum siap di Supabase, menggunakan data lokal.');
@@ -159,7 +265,7 @@ export default function App() {
               .from('menu_items')
               .select('*');
             if (!errMenu && dbMenu && dbMenu.length > 0) {
-              setMenuItems(dbMenu);
+              setMenuItems(dbMenu.map(row => normalizeMenuItem(row)));
             }
           } catch (e) {
             console.log('Tabel "menu_items" belum siap di Supabase, menggunakan data lokal.');
@@ -257,7 +363,7 @@ export default function App() {
         }
       }
       if (updated.length > 0) {
-        const { error } = await supabase.from('menu_items').upsert(updated);
+        const { error } = await robustUpsert('menu_items', updated);
         if (error) {
           console.error('Supabase upsert error:', error);
           syncError = true;
@@ -319,7 +425,7 @@ export default function App() {
       console.warn('Gagal menyimpan pengaturan ke LocalStorage karena quota penuh.', e);
     }
     try {
-      const { error } = await supabase.from('settings').upsert({ id: 'current_settings', ...updated });
+      const { error } = await robustUpsert('settings', { id: 'current_settings', ...updated });
       if (error) {
         console.error('Supabase settings upsert error:', error);
         try { localStorage.setItem('kulle_settings_dirty', 'true'); } catch (_) {}
