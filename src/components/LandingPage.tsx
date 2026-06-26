@@ -246,7 +246,7 @@ export default function LandingPage({
 
   const handleWhatsAppSend = () => {
     const encoded = encodeURIComponent(whatsappMsg);
-    window.open(`https://wa.me/${settings.whatsappNumber.replace(/[^0-9]/g, '')}?text=${encoded}`, '_blank');
+    window.open(`https://wa.me/${(settings.whatsappNumber || '').replace(/[^0-9]/g, '')}?text=${encoded}`, '_blank');
   };
 
   // Filtering Logic

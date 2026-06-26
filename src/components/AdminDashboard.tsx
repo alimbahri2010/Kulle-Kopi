@@ -1530,12 +1530,12 @@ export default function AdminDashboard({
                                   <div className="flex items-center gap-1 mt-0.5">
                                     <span className="text-[10px] text-emerald-500 font-bold">WA:</span>
                                     <a 
-                                      href={`https://wa.me/${res.whatsapp.replace(/[^0-9]/g, '')}`} 
+                                      href={`https://wa.me/${(res.whatsapp || '').replace(/[^0-9]/g, '')}`} 
                                       target="_blank" 
                                       rel="noreferrer"
                                       className="text-[10px] font-mono text-slate-400 hover:text-emerald-500 hover:underline transition-colors"
                                     >
-                                      {res.whatsapp} ↗
+                                      {res.whatsapp || '-'} ↗
                                     </a>
                                   </div>
                                 </div>
