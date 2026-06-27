@@ -135,4 +135,15 @@ export interface Reservation {
   createdAt: string;
 }
 
+export interface CoffeeBrand {
+  id: string;
+  name: string;
+  origin: string;
+  roastLevel: string;
+  description: string;
+  image: string;
+  isActive: boolean;
+}
+
+
 

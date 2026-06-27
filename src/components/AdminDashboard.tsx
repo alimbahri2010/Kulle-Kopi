@@ -10,9 +10,9 @@ import {
   Search, Bell, User, LayoutDashboard, UtensilsCrossed, PackageOpen, 
   HelpCircle, LogOut, Check, X, ShieldAlert, Plus, Eye, Printer, 
   Tag, Compass, Sparkles, Filter, ToggleLeft, Edit, Trash2, CheckCircle2,
-  DollarSign, RefreshCcw, Landmark, Upload, Image, Info, MessageSquare, Star
+  DollarSign, RefreshCcw, Landmark, Upload, Image, Info, MessageSquare, Star, Coffee
  } from 'lucide-react';
-import { MenuItem, Order, Customer, InventoryItem, Employee, Promotion, CafeSettings, OrderStatus, Category, GalleryItem, Review, Reservation } from '../types';
+import { MenuItem, Order, Customer, InventoryItem, Employee, Promotion, CafeSettings, OrderStatus, Category, GalleryItem, Review, Reservation, CoffeeBrand } from '../types';
 import { supabase } from '../supabaseClient';
 // @ts-ignore
 import logoImg from '../assets/images/regenerated_image_1780051135628.png';
@@ -36,6 +36,7 @@ interface AdminDashboardProps {
   galleryPhotos: GalleryItem[];
   reviews: Review[];
   reservations?: Reservation[];
+  coffeeBrands?: CoffeeBrand[];
   onUpdateMenu: (updated: MenuItem[]) => void;
   onUpdateOrders: (updated: Order[]) => void;
   onUpdateCustomers?: (updated: Customer[]) => void;
@@ -45,6 +46,7 @@ interface AdminDashboardProps {
   onUpdateSettings: (settings: CafeSettings) => void;
   onUpdateGallery: (updated: GalleryItem[]) => void;
   onUpdateReviews: (updated: Review[]) => void;
+  onUpdateCoffeeBrands?: (updated: CoffeeBrand[]) => void;
   onUpdateReservations?: (updated: Reservation[]) => void;
   onDeleteSeededData?: () => void;
   isDarkMode: boolean;
@@ -63,6 +65,7 @@ export default function AdminDashboard({
   galleryPhotos,
   reviews,
   reservations = [],
+  coffeeBrands = [],
   onUpdateMenu,
   onUpdateOrders,
   onUpdateCustomers,
@@ -72,6 +75,7 @@ export default function AdminDashboard({
   onUpdateSettings,
   onUpdateGallery,
   onUpdateReviews,
+  onUpdateCoffeeBrands,
   onUpdateReservations,
   onDeleteSeededData,
   isDarkMode,
@@ -242,6 +246,17 @@ export default function AdminDashboard({
   const [reviewFormRating, setReviewFormRating] = useState(5);
   const [reviewFormDate, setReviewFormDate] = useState('');
   const [reviewFormAvatar, setReviewFormAvatar] = useState('');
+
+  // Coffee Brands Modification States
+  const [brandFormOpen, setBrandFormOpen] = useState(false);
+  const [editingBrand, setEditingBrand] = useState<CoffeeBrand | null>(null);
+  const [brandFormName, setBrandFormName] = useState('');
+  const [brandFormOrigin, setBrandFormOrigin] = useState('');
+  const [brandFormRoast, setBrandFormRoast] = useState('Medium');
+  const [brandFormDesc, setBrandFormDesc] = useState('');
+  const [brandFormImage, setBrandFormImage] = useState('');
+  const [brandFormIsActive, setBrandFormIsActive] = useState(true);
+  const [isDraggingBrandImage, setIsDraggingBrandImage] = useState(false);
 
   // Customer Modification States
   const [custFormOpen, setCustFormOpen] = useState(false);
@@ -780,6 +795,99 @@ export default function AdminDashboard({
     reader.readAsDataURL(file);
   };
 
+  const handleOpenBrandForm = (brand: CoffeeBrand | null = null) => {
+    if (brand) {
+      setEditingBrand(brand);
+      setBrandFormName(brand.name);
+      setBrandFormOrigin(brand.origin || '');
+      setBrandFormRoast(brand.roastLevel || 'Medium');
+      setBrandFormDesc(brand.description || '');
+      setBrandFormImage(brand.image || '');
+      setBrandFormIsActive(brand.isActive !== false);
+    } else {
+      setEditingBrand(null);
+      setBrandFormName('');
+      setBrandFormOrigin('');
+      setBrandFormRoast('Medium');
+      setBrandFormDesc('');
+      setBrandFormImage('');
+      setBrandFormIsActive(true);
+    }
+    setBrandFormOpen(true);
+  };
+
+  const handleSaveBrand = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!brandFormName || !brandFormDesc) {
+      alert("Silakan isi nama dan deskripsi brand terlebih dahulu.");
+      return;
+    }
+
+    if (editingBrand) {
+      // Edit
+      const updatedList = coffeeBrands.map((b) => 
+        b.id === editingBrand.id 
+          ? { 
+              ...b, 
+              name: brandFormName, 
+              origin: brandFormOrigin, 
+              roastLevel: brandFormRoast, 
+              description: brandFormDesc, 
+              image: brandFormImage, 
+              isActive: brandFormIsActive 
+            } 
+          : b
+      );
+      if (onUpdateCoffeeBrands) {
+        onUpdateCoffeeBrands(updatedList);
+      }
+    } else {
+      // Create
+      const newItem: CoffeeBrand = {
+        id: 'brand_' + Date.now(),
+        name: brandFormName,
+        origin: brandFormOrigin,
+        roastLevel: brandFormRoast,
+        description: brandFormDesc,
+        image: brandFormImage,
+        isActive: brandFormIsActive
+      };
+      if (onUpdateCoffeeBrands) {
+        onUpdateCoffeeBrands([newItem, ...coffeeBrands]);
+      }
+    }
+    setBrandFormOpen(false);
+  };
+
+  const handleDeleteBrand = (id: string) => {
+    setDeleteConfirmState({
+      isOpen: true,
+      title: "Konfirmasi Hapus Brand Kopi",
+      message: "Apakah Anda yakin ingin menghapus brand kopi ini? Data ini akan langsung disinkronkan.",
+      onConfirm: () => {
+        const updatedList = coffeeBrands.filter(b => b.id !== id);
+        if (onUpdateCoffeeBrands) {
+          onUpdateCoffeeBrands(updatedList);
+        }
+      }
+    });
+  };
+
+  const handleBrandImageUploadChange = (file: File) => {
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      alert("Ukuran gambar tidak boleh melebihi 2MB.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      if (typeof reader.result === 'string') {
+        setBrandFormImage(reader.result);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleOpenAddCustomer = () => {
     setEditingCustomer(null);
     setCustFormName('');
@@ -1117,6 +1225,7 @@ export default function AdminDashboard({
       case 'promotions': return 'Kode Promo & Diskon';
       case 'gallery': return 'Galeri Foto Cafe';
       case 'about_kulle': return 'Tentang Kulle';
+      case 'coffee_brands': return 'Kelola Brand Kopi';
       case 'reviews': return 'Ulasan & Review';
       case 'settings': return 'Pengaturan Utama';
       default: return tabId.toUpperCase();
@@ -1170,6 +1279,7 @@ export default function AdminDashboard({
               { id: 'inventory', label: 'Stok Bahan Baku', icon: <PackageOpen className="w-4.5 h-4.5" /> },
               { id: 'gallery', label: 'Edit Galeri', icon: <Image className="w-4.5 h-4.5" /> },
               { id: 'about_kulle', label: 'Tentang Kulle', icon: <Info className="w-4.5 h-4.5" /> },
+              { id: 'coffee_brands', label: 'Brand Kopi', icon: <Coffee className="w-4.5 h-4.5" /> },
               { id: 'reviews', label: 'Kelola Ulasan', icon: <MessageSquare className="w-4.5 h-4.5" /> },
               { id: 'settings', label: 'Pengaturan Utama', icon: <Settings className="w-4.5 h-4.5" /> }
             ].map((tab) => (
@@ -2461,6 +2571,281 @@ export default function AdminDashboard({
                               <Trash2 className="w-3.5 h-3.5" /> Hapus
                             </button>
                           </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ==============================================
+              VIEW 8.7: MANAGE COFFEE BEAN BRANDS
+              ============================================== */}
+          {activeSidebarTab === 'coffee_brands' && (
+            <div className="space-y-6">
+              
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div>
+                  <h3 className="text-xl font-extrabold tracking-tight text-white">Kelola Brand Kopi Premium</h3>
+                  <p className="text-xs text-slate-400">Atur, tambah, ubah, atau hapus brand biji kopi premium yang ditampilkan di section Tentang Kulle.</p>
+                </div>
+
+                <button
+                  id="add-brand-btn"
+                  onClick={() => handleOpenBrandForm(null)}
+                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#0F52BA] to-blue-500 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow"
+                >
+                  <Plus className="w-4.5 h-4.5" /> TAMBAH BRAND BARU
+                </button>
+              </div>
+
+              {/* Total Summary Stats for Brands */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className={`p-4 rounded-2xl border ${isDarkMode ? 'bg-[#0a142c] border-slate-800' : 'bg-white border-slate-100'} flex items-center gap-4`}>
+                  <div className="p-3 rounded-xl bg-blue-500/10 text-[#0F52BA] dark:text-cyan-400">
+                    <Coffee className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase font-mono tracking-wider text-slate-400">Total Brand Kopi</p>
+                    <p className="text-lg font-black">{coffeeBrands.length} Brand</p>
+                  </div>
+                </div>
+
+                <div className={`p-4 rounded-2xl border ${isDarkMode ? 'bg-[#0a142c] border-slate-800' : 'bg-white border-slate-100'} flex items-center gap-4`}>
+                  <div className="p-3 rounded-xl bg-emerald-500/10 text-emerald-500">
+                    <CheckCircle2 className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase font-mono tracking-wider text-slate-400">Brand Aktif (Tampil)</p>
+                    <p className="text-lg font-black">{coffeeBrands.filter(b => b.isActive).length} Aktif</p>
+                  </div>
+                </div>
+
+                <div className={`p-4 rounded-2xl border ${isDarkMode ? 'bg-[#0a142c] border-slate-800' : 'bg-white border-slate-100'} flex items-center gap-4`}>
+                  <div className="p-3 rounded-xl bg-slate-500/10 text-slate-400">
+                    <X className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase font-mono tracking-wider text-slate-400">Brand Non-Aktif</p>
+                    <p className="text-lg font-black">{coffeeBrands.filter(b => !b.isActive).length} Non-Aktif</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Brand Editor Form / Modal */}
+              {brandFormOpen && (
+                <motion.div 
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={`p-6 rounded-2xl border ${isDarkMode ? 'bg-[#0a142c] border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-800'} space-y-4 shadow-xl`}
+                >
+                  <div className="flex justify-between items-center pb-2 border-b border-slate-800/60">
+                    <h4 className="font-extrabold text-sm uppercase tracking-wider text-[#0F52BA] dark:text-cyan-400">
+                      {editingBrand ? '✏️ Ubah Brand Kopi' : '✨ Tambah Brand Kopi Baru'}
+                    </h4>
+                    <button onClick={() => setBrandFormOpen(false)} className="text-slate-400 hover:text-white">
+                      <X className="w-4.5 h-4.5" />
+                    </button>
+                  </div>
+
+                  <form onSubmit={handleSaveBrand} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-mono uppercase tracking-wider text-slate-400">Nama Brand Kopi</label>
+                        <input
+                          required
+                          type="text"
+                          value={brandFormName}
+                          onChange={(e) => setBrandFormName(e.target.value)}
+                          placeholder="Contoh: Toraja Sapan"
+                          className={`w-full p-2.5 text-xs rounded-lg border outline-none ${isDarkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-850'}`}
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-mono uppercase tracking-wider text-slate-400">Asal Biji Kopi (Origin)</label>
+                        <input
+                          required
+                          type="text"
+                          value={brandFormOrigin}
+                          onChange={(e) => setBrandFormOrigin(e.target.value)}
+                          placeholder="Contoh: Toraja, Sulawesi Selatan"
+                          className={`w-full p-2.5 text-xs rounded-lg border outline-none ${isDarkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-850'}`}
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-mono uppercase tracking-wider text-slate-400">Tingkat Sangrai (Roast Level)</label>
+                        <select
+                          value={brandFormRoast}
+                          onChange={(e) => setBrandFormRoast(e.target.value)}
+                          className={`w-full p-2.5 text-xs rounded-lg border outline-none ${isDarkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-850'}`}
+                        >
+                          <option value="Light Roast">Light Roast</option>
+                          <option value="Medium Roast">Medium Roast</option>
+                          <option value="Medium-Dark Roast">Medium-Dark Roast</option>
+                          <option value="Dark Roast">Dark Roast</option>
+                        </select>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-mono uppercase tracking-wider text-slate-400">Deskripsi Cita Rasa & Karakter</label>
+                        <textarea
+                          required
+                          rows={3}
+                          value={brandFormDesc}
+                          onChange={(e) => setBrandFormDesc(e.target.value)}
+                          placeholder="Jelaskan aroma, tingkat keasaman, rasa penutup, atau sejarah singkatnya..."
+                          className={`w-full p-2.5 text-xs rounded-lg border outline-none ${isDarkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-850'}`}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      {/* Image Upload Block */}
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-mono uppercase tracking-wider text-slate-400">Foto Kemasan / Biji Kopi</label>
+                        
+                        <div 
+                          className={`border-2 border-dashed rounded-xl p-4 text-center transition-all flex flex-col items-center justify-center min-h-[160px] ${
+                            isDraggingBrandImage ? 'border-cyan-400 bg-cyan-400/5' : 'border-slate-800/80 hover:border-slate-700 bg-slate-900/40'
+                          }`}
+                          onDragOver={(e) => { e.preventDefault(); setIsDraggingBrandImage(true); }}
+                          onDragLeave={() => setIsDraggingBrandImage(false)}
+                          onDrop={(e) => {
+                            e.preventDefault();
+                            setIsDraggingBrandImage(false);
+                            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                              handleBrandImageUploadChange(e.dataTransfer.files[0]);
+                            }
+                          }}
+                        >
+                          {brandFormImage ? (
+                            <div className="relative group w-full h-32 rounded-lg overflow-hidden">
+                              <img src={brandFormImage} alt="Brand Kopi Preview" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all">
+                                <button 
+                                  type="button" 
+                                  onClick={() => setBrandFormImage('')}
+                                  className="p-1.5 rounded-lg bg-red-500 hover:bg-red-600 text-white text-[10px] uppercase font-mono tracking-wider font-bold"
+                                >
+                                  Hapus
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="space-y-2">
+                              <Upload className="w-8 h-8 text-slate-500 mx-auto" />
+                              <p className="text-[10px] text-slate-400 font-medium">Tarik &amp; lepas gambar di sini, atau klik tombol di bawah</p>
+                              <label className="inline-block px-3 py-1.5 rounded-lg bg-[#0F52BA]/20 hover:bg-[#0F52BA]/30 text-[#0F52BA] dark:text-cyan-400 text-[10px] font-bold uppercase tracking-wider cursor-pointer transition-all">
+                                Pilih File Gambar
+                                <input 
+                                  type="file" 
+                                  accept="image/*" 
+                                  className="hidden" 
+                                  onChange={(e) => {
+                                    if (e.target.files && e.target.files[0]) {
+                                      handleBrandImageUploadChange(e.target.files[0]);
+                                    }
+                                  }} 
+                                />
+                              </label>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center space-x-2 pt-2">
+                        <input
+                          type="checkbox"
+                          id="brand_form_is_active"
+                          checked={brandFormIsActive}
+                          onChange={(e) => setBrandFormIsActive(e.target.checked)}
+                          className="w-4 h-4 text-[#0F52BA] border-slate-700 bg-slate-900 rounded focus:ring-0 cursor-pointer"
+                        />
+                        <label htmlFor="brand_form_is_active" className="text-xs text-slate-300 font-semibold cursor-pointer select-none">
+                          Tampilkan Brand ini di Halaman Utama (Aktif)
+                        </label>
+                      </div>
+
+                      <div className="flex items-center space-x-3 pt-4 border-t border-slate-800/40">
+                        <button
+                          type="submit"
+                          className="flex-1 py-2 bg-gradient-to-r from-[#0F52BA] to-blue-500 hover:opacity-95 font-bold text-xs uppercase tracking-wider text-white rounded-lg shadow shadow-blue-500/20"
+                        >
+                          {editingBrand ? 'Simpan Perubahan' : 'Tambahkan Brand'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setBrandFormOpen(false)}
+                          className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs uppercase tracking-wider rounded-lg transition-all"
+                        >
+                          Batal
+                        </button>
+                      </div>
+                    </div>
+                  </form>
+                </motion.div>
+              )}
+
+              {/* Brands Grid Panel */}
+              <div className={`p-6 rounded-2xl border ${isDarkMode ? 'bg-[#0a142c] border-slate-800' : 'bg-white border-slate-200'}`}>
+                {coffeeBrands.length === 0 ? (
+                  <div className="text-center py-12 space-y-3">
+                    <Coffee className="w-12 h-12 text-slate-600 mx-auto" />
+                    <h4 className="font-bold text-slate-300">Belum ada Brand Kopi</h4>
+                    <p className="text-xs text-slate-500">Klik tombol di kanan atas untuk mulai mendaftarkan biji kopi premium Kulle.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {coffeeBrands.map((brand) => (
+                      <div 
+                        key={brand.id}
+                        className={`p-4 rounded-xl border flex flex-col justify-between gap-4 transition-all hover:shadow-lg ${
+                          isDarkMode ? 'bg-[#060d1e] border-slate-850 hover:border-slate-800' : 'bg-slate-50 border-slate-100 hover:border-slate-200'
+                        }`}
+                      >
+                        <div className="flex gap-4">
+                          <div className="w-20 h-20 rounded-lg overflow-hidden shrink-0 bg-slate-850 border border-slate-800">
+                            <img 
+                              src={brand.image || 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&q=80&w=400'} 
+                              alt={brand.name} 
+                              className="w-full h-full object-cover"
+                              referrerPolicy="no-referrer"
+                            />
+                          </div>
+
+                          <div className="space-y-1 min-w-0">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <h4 className="font-bold text-sm text-white truncate">{brand.name}</h4>
+                              <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded-full ${brand.isActive ? 'bg-emerald-500/10 text-emerald-400' : 'bg-slate-500/10 text-slate-400'}`}>
+                                {brand.isActive ? 'Tampil' : 'Draft'}
+                              </span>
+                            </div>
+
+                            <p className="text-[10px] font-mono text-slate-400">📍 {brand.origin || 'Kulle Origin'}</p>
+                            <p className="text-[10px] font-mono text-cyan-400 font-bold">{brand.roastLevel || 'Medium'}</p>
+                            <p className="text-[11px] text-slate-300 line-clamp-2 mt-1 leading-relaxed">{brand.description}</p>
+                          </div>
+                        </div>
+
+                        <div className="flex justify-end gap-2 pt-2 border-t border-slate-850">
+                          <button
+                            id={`edit-brand-btn-${brand.id}`}
+                            onClick={() => handleOpenBrandForm(brand)}
+                            className="px-2.5 py-1.5 rounded-lg bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 text-[10px] flex items-center gap-1 font-bold uppercase tracking-wider transition-all cursor-pointer"
+                          >
+                            <Edit className="w-3.5 h-3.5" /> Ubah
+                          </button>
+                          <button
+                            id={`delete-brand-btn-${brand.id}`}
+                            onClick={() => handleDeleteBrand(brand.id)}
+                            className="px-2.5 py-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 text-[10px] flex items-center gap-1 font-bold uppercase tracking-wider transition-all cursor-pointer"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" /> Hapus
+                          </button>
                         </div>
                       </div>
                     ))}

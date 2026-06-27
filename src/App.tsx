@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { MenuItem, Order, Customer, InventoryItem, Employee, Promotion, CafeSettings, OrderItem, GalleryItem, Review, Reservation } from './types';
+import { MenuItem, Order, Customer, InventoryItem, Employee, Promotion, CafeSettings, OrderItem, GalleryItem, Review, Reservation, CoffeeBrand } from './types';
 import { 
   INITIAL_MENU_ITEMS, 
   INITIAL_ORDERS, 
@@ -15,7 +15,8 @@ import {
   INITIAL_REVIEWS,
   INITIAL_SETTINGS,
   INITIAL_GALLERY_PHOTOS,
-  INITIAL_RESERVATIONS
+  INITIAL_RESERVATIONS,
+  INITIAL_COFFEE_BRANDS
 } from './initialData';
 import LandingPage from './components/LandingPage';
 import AdminDashboard from './components/AdminDashboard';
@@ -104,27 +105,36 @@ function normalizeSettings(row: any): CafeSettings {
   };
 }
 
+function normalizeCoffeeBrand(row: any): CoffeeBrand {
+  return {
+    id: row.id,
+    name: row.name || '',
+    origin: row.origin || '',
+    roastLevel: row.roastLevel ?? row.roast_level ?? row.roastlevel ?? '',
+    description: row.description || '',
+    image: row.image || '',
+    isActive: row.isActive !== undefined ? !!row.isActive : 
+              row.is_active !== undefined ? !!row.is_active : 
+              row.isactive !== undefined ? !!row.isactive : true,
+  };
+}
+
 async function robustUpsert(tableName: string, data: any) {
-  // 1. Try raw (camelCase)
-  const { error } = await supabase.from(tableName).upsert(data);
-  if (!error) return { error: null };
+  // Try snake_case first (this is the default and matches our schema exactly)
+  const snakeData = convertKeysToSnakeCase(data);
+  const { error: snakeError } = await supabase.from(tableName).upsert(snakeData);
+  if (!snakeError) return { error: null };
 
-  // If error is undefined column (42703), try snake_case
-  if (error.code === '42703') {
-    const snakeData = convertKeysToSnakeCase(data);
-    const { error: snakeError } = await supabase.from(tableName).upsert(snakeData);
-    if (!snakeError) return { error: null };
+  // Fallback 1: Try raw (camelCase)
+  const { error: camelError } = await supabase.from(tableName).upsert(data);
+  if (!camelError) return { error: null };
 
-    // If still undefined column, try lowercase
-    if (snakeError.code === '42703') {
-      const lowerData = convertKeysToLowercase(data);
-      const { error: lowerError } = await supabase.from(tableName).upsert(lowerData);
-      if (!lowerError) return { error: null };
-      return { error: lowerError };
-    }
-    return { error: snakeError };
-  }
-  return { error };
+  // Fallback 2: Try lowercase
+  const lowerData = convertKeysToLowercase(data);
+  const { error: lowerError } = await supabase.from(tableName).upsert(lowerData);
+  if (!lowerError) return { error: null };
+
+  return { error: lowerError || camelError || snakeError };
 }
 
 export default function App() {
@@ -194,6 +204,7 @@ export default function App() {
   const [galleryPhotos, setGalleryPhotos] = useState<GalleryItem[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [coffeeBrands, setCoffeeBrands] = useState<CoffeeBrand[]>([]);
 
   // Load state from Supabase or fallback to Local Storage / INITIAL_DATA
   useEffect(() => {
@@ -291,6 +302,28 @@ export default function App() {
             }
           } catch (e) {
             console.log('Tabel "gallery_items" belum siap di Supabase, menggunakan data lokal.');
+          }
+        }
+
+        // --- 4b. Load Coffee Brands ---
+        let loadedBrands = INITIAL_COFFEE_BRANDS;
+        const storedBrands = localStorage.getItem('kulle_coffee_brands');
+        const isBrandsDirty = localStorage.getItem('kulle_coffee_brands_dirty') === 'true';
+        if (storedBrands) {
+          try { loadedBrands = JSON.parse(storedBrands); } catch (err) {}
+        }
+        setCoffeeBrands(loadedBrands);
+
+        if (!isBrandsDirty) {
+          try {
+            const { data: dbBrands, error: errBrands } = await supabase
+              .from('coffee_brands')
+              .select('*');
+            if (!errBrands && dbBrands && dbBrands.length > 0) {
+              setCoffeeBrands(dbBrands.map(row => normalizeCoffeeBrand(row)));
+            }
+          } catch (e) {
+            console.log('Tabel "coffee_brands" belum siap di Supabase, menggunakan data lokal.');
           }
         }
 
@@ -471,6 +504,42 @@ export default function App() {
     } catch (e) {
       console.log('Sinkronisasi galeri foto ke Supabase ditunda (tabel belum terbentuk).');
       try { localStorage.setItem('kulle_gallery_dirty', 'true'); } catch (_) {}
+    }
+  };
+
+  const handleUpdateCoffeeBrands = async (updated: CoffeeBrand[]) => {
+    const deletedIds = coffeeBrands.filter(brand => !updated.some(u => u.id === brand.id)).map(brand => brand.id);
+    setCoffeeBrands(updated);
+    try {
+      localStorage.setItem('kulle_coffee_brands', JSON.stringify(updated));
+    } catch (e) {
+      console.warn('Gagal menyimpan brand kopi ke LocalStorage karena quota penuh.', e);
+    }
+    try {
+      let syncError = false;
+      if (deletedIds.length > 0) {
+        const { error } = await supabase.from('coffee_brands').delete().in('id', deletedIds);
+        if (error) {
+          console.error('Supabase coffee brands delete error:', error);
+          syncError = true;
+        }
+      }
+      if (updated.length > 0) {
+        const { error } = await robustUpsert('coffee_brands', updated);
+        if (error) {
+          console.error('Supabase coffee brands upsert error:', error);
+          syncError = true;
+        }
+      }
+
+      if (syncError) {
+        try { localStorage.setItem('kulle_coffee_brands_dirty', 'true'); } catch (_) {}
+      } else {
+        try { localStorage.removeItem('kulle_coffee_brands_dirty'); } catch (_) {}
+      }
+    } catch (e) {
+      console.log('Sinkronisasi brand kopi ke Supabase ditunda (tabel belum terbentuk).');
+      try { localStorage.setItem('kulle_coffee_brands_dirty', 'true'); } catch (_) {}
     }
   };
 
@@ -686,6 +755,7 @@ export default function App() {
           settings={settings}
           galleryPhotos={galleryPhotos}
           reviews={reviews}
+          coffeeBrands={coffeeBrands}
           onPlaceOrder={handlePlaceOrder}
           onAddReservation={handleAddReservation}
           isDarkMode={isDarkMode}
@@ -704,6 +774,7 @@ export default function App() {
           galleryPhotos={galleryPhotos}
           reviews={reviews}
           reservations={reservations}
+          coffeeBrands={coffeeBrands}
           onUpdateMenu={handleUpdateMenu}
           onUpdateOrders={handleUpdateOrders}
           onUpdateCustomers={handleUpdateCustomers}
@@ -712,6 +783,7 @@ export default function App() {
           onUpdatePromotions={handleUpdatePromotions}
           onUpdateSettings={handleUpdateSettings}
           onUpdateGallery={handleUpdateGallery}
+          onUpdateCoffeeBrands={handleUpdateCoffeeBrands}
           onUpdateReviews={handleUpdateReviews}
           onUpdateReservations={handleUpdateReservations}
           onDeleteSeededData={handleDeleteSeededData}

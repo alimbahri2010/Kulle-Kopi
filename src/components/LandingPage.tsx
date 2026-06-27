@@ -11,7 +11,7 @@ import {
   Wifi, Music, Coffee, Sparkles, Heart, Check,
   SendHorizontal, ChevronLeft, ChevronRight, Calendar, Users
 } from 'lucide-react';
-import { MenuItem, Promotion, CafeSettings, Review, OrderItem, Order, GalleryItem } from '../types';
+import { MenuItem, Promotion, CafeSettings, Review, OrderItem, Order, GalleryItem, CoffeeBrand } from '../types';
 // @ts-ignore
 import logoImg from '../assets/images/regenerated_image_1780051135628.png';
 // @ts-ignore
@@ -31,6 +31,7 @@ interface LandingPageProps {
   settings: CafeSettings;
   galleryPhotos?: GalleryItem[];
   reviews: Review[];
+  coffeeBrands?: CoffeeBrand[];
   onPlaceOrder: (order: Omit<Order, 'id' | 'status' | 'createdAt'>) => void;
   onAddReservation?: (res: { name: string; whatsapp: string; message: string; reservationDate?: string }) => void;
   isDarkMode: boolean;
@@ -63,6 +64,7 @@ export default function LandingPage({
   settings,
   galleryPhotos = [],
   reviews,
+  coffeeBrands = [],
   onPlaceOrder,
   onAddReservation,
   isDarkMode,
@@ -598,6 +600,66 @@ export default function LandingPage({
             </div>
 
           </div>
+
+          {/* Display of Coffee Bean Brands (Available Biji Kopi) */}
+          {coffeeBrands && coffeeBrands.filter(b => b.isActive).length > 0 && (
+            <div id="coffee-brands-display" className="mt-20 pt-16 border-t border-slate-200 dark:border-slate-800/60 relative">
+              <div className="text-center space-y-3 mb-12">
+                <span className="text-xs uppercase font-mono tracking-widest text-[#0F52BA] dark:text-cyan-400 font-bold bg-blue-50 dark:bg-[#0a1f44] px-3.5 py-1.5 rounded-full inline-block">
+                  KOLEKSI BIJI KOPI PILIHAN KULLE
+                </span>
+                <h3 className="text-2xl sm:text-4xl font-light font-serif tracking-tight text-black dark:text-white">
+                  Eksplorasi <span className="font-serif font-bold italic text-[#0F52BA] dark:text-cyan-400">Cita Rasa Nusantara</span>
+                </h3>
+                <p className={`text-xs max-w-2xl mx-auto leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-gray-500'}`}>
+                  Kami mengkurasi biji kopi terbaik dari perkebunan pilihan untuk menghasilkan secangkir kopi dengan profil rasa yang kaya, unik, dan otentik.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {coffeeBrands.filter(b => b.isActive).map((brand, idx) => (
+                  <motion.div
+                    key={brand.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, delay: idx * 0.1 }}
+                    className={`group relative rounded-2xl overflow-hidden border transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${
+                      isDarkMode 
+                        ? 'bg-slate-900/30 border-slate-800/80 hover:border-cyan-500/30 hover:bg-slate-900/50' 
+                        : 'bg-white border-slate-100 hover:border-[#0F52BA]/30 shadow-sm'
+                    }`}
+                  >
+                    <div className="relative h-48 overflow-hidden bg-slate-800">
+                      <img
+                        src={brand.image || 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&q=80&w=400'}
+                        alt={brand.name}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        referrerPolicy="no-referrer"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                      <span className="absolute top-3 right-3 text-[10px] font-bold uppercase tracking-widest bg-[#0F52BA] dark:bg-cyan-500 text-white px-2.5 py-1 rounded-full shadow-md">
+                        {brand.roastLevel || 'Medium'}
+                      </span>
+                    </div>
+
+                    <div className="p-5 space-y-3">
+                      <span className="text-[10px] uppercase font-mono tracking-wider text-emerald-500 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/30 px-2 py-0.5 rounded">
+                        📍 {brand.origin || 'Indonesia'}
+                      </span>
+                      <h4 className="font-bold text-sm text-black dark:text-white transition-colors duration-300 group-hover:text-[#0F52BA] dark:group-hover:text-cyan-400">
+                        {brand.name}
+                      </h4>
+                      <p className={`text-[11px] leading-relaxed line-clamp-3 ${isDarkMode ? 'text-slate-400' : 'text-gray-500'}`}>
+                        {brand.description}
+                      </p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          )}
+
         </div>
       </section>
 

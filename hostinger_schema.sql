@@ -183,6 +183,17 @@ CREATE TABLE IF NOT EXISTS reservations (
   created_at VARCHAR(100) NOT NULL
 );
 
+-- M. Table: coffee_brands
+CREATE TABLE IF NOT EXISTS coffee_brands (
+  id VARCHAR(255) PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  origin VARCHAR(255) NOT NULL,
+  roast_level VARCHAR(255) NOT NULL,
+  description TEXT NOT NULL,
+  image TEXT NOT NULL,
+  is_active BOOLEAN NOT NULL DEFAULT true
+);
+
 
 -- ==========================================
 -- 2. ENABLE ROW LEVEL SECURITY (RLS)
@@ -199,6 +210,7 @@ ALTER TABLE settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE gallery_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE reviews ENABLE ROW LEVEL SECURITY;
 ALTER TABLE reservations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE coffee_brands ENABLE ROW LEVEL SECURITY;
 
 
 -- ==========================================
@@ -219,6 +231,7 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON settings TO public;
 GRANT SELECT, INSERT, UPDATE, DELETE ON gallery_items TO public;
 GRANT SELECT, INSERT, UPDATE, DELETE ON reviews TO public;
 GRANT SELECT, INSERT, UPDATE, DELETE ON reservations TO public;
+GRANT SELECT, INSERT, UPDATE, DELETE ON coffee_brands TO public;
 
 
 -- ==========================================
@@ -296,6 +309,12 @@ CREATE POLICY "Allow select for staff" ON reservations FOR SELECT USING (true);
 CREATE POLICY "Allow insert for everyone" ON reservations FOR INSERT WITH CHECK (true);
 CREATE POLICY "Allow update for staff" ON reservations FOR UPDATE USING (true) WITH CHECK (true);
 CREATE POLICY "Allow delete for staff" ON reservations FOR DELETE USING (true);
+
+-- M. Policies for "coffee_brands"
+CREATE POLICY "Allow select for everyone" ON coffee_brands FOR SELECT USING (true);
+CREATE POLICY "Allow insert for everyone" ON coffee_brands FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow update for everyone" ON coffee_brands FOR UPDATE USING (true) WITH CHECK (true);
+CREATE POLICY "Allow delete for everyone" ON coffee_brands FOR DELETE USING (true);
 
 
 -- =========================================================================
@@ -454,6 +473,17 @@ CREATE TABLE IF NOT EXISTS reservations (
   reservation_date VARCHAR(100),
   status VARCHAR(100) NOT NULL DEFAULT 'Pending',
   created_at VARCHAR(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- M. Table: coffee_brands
+CREATE TABLE IF NOT EXISTS coffee_brands (
+  id VARCHAR(255) PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  origin VARCHAR(255) NOT NULL,
+  roast_level VARCHAR(255) NOT NULL,
+  description TEXT NOT NULL,
+  image TEXT NOT NULL,
+  is_active BOOLEAN NOT NULL DEFAULT true
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 */
