@@ -193,10 +193,10 @@ CREATE TABLE IF NOT EXISTS reservations (
 CREATE TABLE IF NOT EXISTS coffee_brands (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
-  origin TEXT NOT NULL,
-  roast_level TEXT NOT NULL,
-  description TEXT NOT NULL,
-  image TEXT NOT NULL,
+  origin TEXT,
+  roast_level TEXT,
+  description TEXT,
+  image TEXT,
   is_active BOOLEAN NOT NULL DEFAULT true
 );
 
@@ -346,3 +346,4 @@ CREATE POLICY "Allow select for everyone" ON coffee_brands FOR SELECT TO public 
 CREATE POLICY "Allow insert for everyone" ON coffee_brands FOR INSERT TO public WITH CHECK (true);
 CREATE POLICY "Allow update for everyone" ON coffee_brands FOR UPDATE TO public USING (true) WITH CHECK (true);
 CREATE POLICY "Allow delete for everyone" ON coffee_brands FOR DELETE TO public USING (true);
+

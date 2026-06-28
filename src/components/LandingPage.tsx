@@ -102,6 +102,9 @@ export default function LandingPage({
   // Gallery Lightbox State
   const [activeLightboxImg, setActiveLightboxImg] = useState<{ url: string; title: string } | null>(null);
   
+  // Coffee Brand Detail State
+  const [activeCoffeeBrand, setActiveCoffeeBrand] = useState<CoffeeBrand | null>(null);
+  
   // Testimonial State
   const [currentReviewIdx, setCurrentReviewIdx] = useState(0);
   
@@ -602,21 +605,21 @@ export default function LandingPage({
           </div>
 
           {/* Display of Coffee Bean Brands (Available Biji Kopi) */}
-          {coffeeBrands && coffeeBrands.filter(b => b.isActive).length > 0 && (
-            <div id="coffee-brands-display" className="mt-20 pt-16 border-t border-slate-200 dark:border-slate-800/60 relative">
-              <div className="text-center space-y-3 mb-12">
-                <span className="text-xs uppercase font-mono tracking-widest text-[#0F52BA] dark:text-cyan-400 font-bold bg-blue-50 dark:bg-[#0a1f44] px-3.5 py-1.5 rounded-full inline-block">
-                  KOLEKSI BIJI KOPI PILIHAN KULLE
-                </span>
-                <h3 className="text-2xl sm:text-4xl font-light font-serif tracking-tight text-black dark:text-white">
-                  Eksplorasi <span className="font-serif font-bold italic text-[#0F52BA] dark:text-cyan-400">Cita Rasa Nusantara</span>
-                </h3>
-                <p className={`text-xs max-w-2xl mx-auto leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-gray-500'}`}>
-                  Kami mengkurasi biji kopi terbaik dari perkebunan pilihan untuk menghasilkan secangkir kopi dengan profil rasa yang kaya, unik, dan otentik.
-                </p>
-              </div>
+          <div id="coffee-brands-display" className="mt-20 pt-16 border-t border-slate-200 dark:border-slate-800/60 relative">
+            <div className="text-center space-y-3 mb-12">
+              <span className="text-xs uppercase font-mono tracking-widest text-[#0F52BA] dark:text-cyan-400 font-bold bg-blue-50 dark:bg-[#0a1f44] px-3.5 py-1.5 rounded-full inline-block">
+                KOLEKSI BIJI KOPI PILIHAN KULLE
+              </span>
+              <h3 className={`text-2xl sm:text-4xl font-light font-serif tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                Eksplorasi <span className="font-serif font-bold italic text-[#0F52BA] dark:text-cyan-400">Cita Rasa Nusantara</span>
+              </h3>
+              <p className={`text-xs max-w-2xl mx-auto leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-gray-500'}`}>
+                Kami mengkurasi biji kopi terbaik dari perkebunan pilihan untuk menghasilkan secangkir kopi dengan profil rasa yang kaya, unik, dan otentik.
+              </p>
+            </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {coffeeBrands && coffeeBrands.filter(b => b.isActive).length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 max-w-5xl mx-auto justify-center">
                 {coffeeBrands.filter(b => b.isActive).map((brand, idx) => (
                   <motion.div
                     key={brand.id}
@@ -624,41 +627,143 @@ export default function LandingPage({
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.5, delay: idx * 0.1 }}
-                    className={`group relative rounded-2xl overflow-hidden border transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${
+                    onClick={() => setActiveCoffeeBrand(brand)}
+                    className={`rounded-2xl border transition-all overflow-hidden relative flex flex-col group cursor-pointer duration-300 hover:-translate-y-1 ${
                       isDarkMode 
-                        ? 'bg-slate-900/30 border-slate-800/80 hover:border-cyan-500/30 hover:bg-slate-900/50' 
-                        : 'bg-white border-slate-100 hover:border-[#0F52BA]/30 shadow-sm'
+                        ? 'bg-[#0a142c] border-[#0F52BA]/15 hover:border-[#0F52BA]/40 shadow-lg shadow-black/20' 
+                        : 'bg-white border-slate-100 hover:border-slate-300/60 shadow-md shadow-slate-100'
                     }`}
                   >
-                    <div className="relative h-48 overflow-hidden bg-slate-800">
+                    <div className="relative h-64 overflow-hidden bg-slate-950 border-b border-inherit">
                       <img
                         src={brand.image || 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&q=80&w=400'}
                         alt={brand.name}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                         referrerPolicy="no-referrer"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                      <span className="absolute top-3 right-3 text-[10px] font-bold uppercase tracking-widest bg-[#0F52BA] dark:bg-cyan-500 text-white px-2.5 py-1 rounded-full shadow-md">
+                      {/* Gradient overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
+                      
+                      {/* Roast level badge */}
+                      <span className="absolute top-4 right-4 text-[10px] font-black uppercase tracking-widest bg-[#0F52BA] dark:bg-cyan-500 text-white px-3 py-1.5 rounded-full shadow-lg border border-white/20">
                         {brand.roastLevel || 'Medium'}
                       </span>
+
+                      {/* Click indicator on hover */}
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <span className="px-5 py-2.5 rounded-full border-2 border-white bg-white/20 text-white text-xs font-black uppercase tracking-wider backdrop-blur-sm flex items-center gap-1.5 shadow-xl">
+                          Detail Kopi <ArrowRight className="w-4 h-4" />
+                        </span>
+                      </div>
                     </div>
 
-                    <div className="p-5 space-y-3">
-                      <span className="text-[10px] uppercase font-mono tracking-wider text-emerald-500 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/30 px-2 py-0.5 rounded">
-                        📍 {brand.origin || 'Indonesia'}
-                      </span>
-                      <h4 className="font-bold text-sm text-black dark:text-white transition-colors duration-300 group-hover:text-[#0F52BA] dark:group-hover:text-cyan-400">
-                        {brand.name}
-                      </h4>
-                      <p className={`text-[11px] leading-relaxed line-clamp-3 ${isDarkMode ? 'text-slate-400' : 'text-gray-500'}`}>
-                        {brand.description}
-                      </p>
+                    <div className="p-5 flex-1 flex flex-col justify-between">
+                      <div className="space-y-2 text-left">
+                        <div className="text-[10px] font-mono uppercase tracking-widest text-[#0F52BA] dark:text-cyan-400 font-bold mt-1 leading-[14px]">
+                          📍 {brand.origin || 'Indonesia'}
+                        </div>
+                        <h4 className={`font-extrabold text-[20px] leading-[27px] tracking-tight transition-colors duration-300 ${
+                          isDarkMode ? 'text-white group-hover:text-cyan-400' : 'text-slate-900 group-hover:text-[#0F52BA]'
+                        }`}>
+                          {brand.name}
+                        </h4>
+                        <p className={`text-xs line-clamp-3 leading-[17px] ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                          {brand.description}
+                        </p>
+                      </div>
                     </div>
                   </motion.div>
                 ))}
               </div>
-            </div>
-          )}
+            ) : (
+              <div className={`text-center py-10 px-6 rounded-2xl border max-w-lg mx-auto ${
+                isDarkMode 
+                  ? 'bg-[#0a142c] border-[#0F52BA]/15 text-slate-400' 
+                  : 'bg-white border-slate-100 text-slate-500 shadow-md shadow-slate-100'
+              }`}>
+                <p className="text-xs italic leading-relaxed font-medium">
+                  Nantikan kurasi koleksi biji kopi premium terbaik Nusantara lainnya segera di Kulle Kopi.
+                </p>
+              </div>
+            )}
+
+            {/* Coffee Brand Details Modal Dialog */}
+            <AnimatePresence>
+              {activeCoffeeBrand && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={() => setActiveCoffeeBrand(null)}
+                  className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
+                >
+                  <motion.div
+                    initial={{ scale: 0.9, y: 20 }}
+                    animate={{ scale: 1, y: 0 }}
+                    exit={{ scale: 0.9, y: 20 }}
+                    onClick={(e) => e.stopPropagation()}
+                    className={`max-w-3xl w-full rounded-3xl overflow-hidden border-2 relative flex flex-col md:flex-row shadow-2xl ${
+                      isDarkMode 
+                        ? 'bg-slate-950 border-slate-800 text-white' 
+                        : 'bg-white border-slate-900 text-slate-900'
+                    }`}
+                  >
+                    {/* Close Button */}
+                    <button
+                      onClick={() => setActiveCoffeeBrand(null)}
+                      className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/80 hover:bg-slate-800 text-white transition-colors border border-white/10"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+
+                    {/* Image Column */}
+                    <div className="w-full md:w-1/2 h-64 md:h-auto min-h-[300px] relative bg-slate-950">
+                      <img 
+                        src={activeCoffeeBrand.image || 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&q=80&w=400'} 
+                        alt={activeCoffeeBrand.name} 
+                        className="w-full h-full object-cover"
+                        referrerPolicy="no-referrer"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent md:bg-gradient-to-r md:from-transparent md:to-black/30" />
+                      <span className="absolute bottom-4 left-4 text-[10px] font-black uppercase tracking-widest bg-cyan-500 text-white px-3 py-1.5 rounded-full border border-white/20">
+                        {activeCoffeeBrand.roastLevel || 'Medium'}
+                      </span>
+                    </div>
+
+                    {/* Content Column */}
+                    <div className="w-full md:w-1/2 p-8 flex flex-col justify-center space-y-6">
+                      <div>
+                        <span className="text-[10px] uppercase font-mono tracking-widest text-emerald-500 font-extrabold bg-emerald-950/30 px-3 py-1 rounded border border-emerald-900/40 inline-block mb-3">
+                          📍 {activeCoffeeBrand.origin || 'Indonesia'}
+                        </span>
+                        <h3 className="text-2xl font-serif font-black tracking-tight leading-tight">
+                          {activeCoffeeBrand.name}
+                        </h3>
+                      </div>
+
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-3">
+                          <span className={`text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded border ${
+                            isDarkMode ? 'border-slate-800 bg-slate-900 text-slate-300' : 'border-slate-200 bg-slate-50 text-slate-700'
+                          }`}>
+                            Roast Level: {activeCoffeeBrand.roastLevel || 'Medium'}
+                          </span>
+                        </div>
+                        
+                        <p className={`text-sm leading-relaxed ${
+                          isDarkMode ? 'text-slate-300' : 'text-slate-700'
+                        }`}>
+                          {activeCoffeeBrand.description}
+                        </p>
+                      </div>
+
+
+                    </div>
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
         </div>
       </section>
@@ -672,7 +777,7 @@ export default function LandingPage({
             <span className="text-xs uppercase font-mono tracking-widest text-[#0F52BA] dark:text-cyan-400 font-bold tracking-[0.2em]">
               Menu yang Dikreasikan Sempurna
             </span>
-            <h2 className="text-3xl sm:text-6xl font-light font-serif tracking-tight text-black dark:text-white">
+            <h2 className={`text-3xl sm:text-6xl font-light font-serif tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
               Kreasi <span className="font-serif font-bold italic text-[#0F52BA] dark:text-cyan-400">Kuliner</span> Kami
             </h2>
             <div className="w-12 h-[2px] bg-[#0F52BA] dark:bg-cyan-400 mx-auto" />
@@ -819,7 +924,7 @@ export default function LandingPage({
               <span className="text-xs uppercase font-mono tracking-widest text-[#0F52BA] dark:text-cyan-400 font-bold tracking-[0.2em]">
                 Pemenang Penghargaan &amp; Favorit Pelanggan
               </span>
-              <h2 className="text-3xl sm:text-6xl font-light font-serif tracking-tight text-black dark:text-white">
+              <h2 className={`text-3xl sm:text-6xl font-light font-serif tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
                 Pilihan Menu <span className="font-serif font-bold italic text-[#0F52BA] dark:text-cyan-400">Andalan</span> Kami
               </h2>
             </div>
