@@ -189,17 +189,6 @@ CREATE TABLE IF NOT EXISTS reservations (
   created_at TEXT NOT NULL
 );
 
--- M. Table: coffee_brands
-CREATE TABLE IF NOT EXISTS coffee_brands (
-  id TEXT PRIMARY KEY,
-  name TEXT NOT NULL,
-  origin TEXT,
-  roast_level TEXT,
-  description TEXT,
-  image TEXT,
-  is_active BOOLEAN NOT NULL DEFAULT true
-);
-
 
 -- ==========================================
 -- 2. ENABLE ROW LEVEL SECURITY (RLS)
@@ -216,7 +205,6 @@ ALTER TABLE settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE gallery_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE reviews ENABLE ROW LEVEL SECURITY;
 ALTER TABLE reservations ENABLE ROW LEVEL SECURITY;
-ALTER TABLE coffee_brands ENABLE ROW LEVEL SECURITY;
 
 
 -- ==========================================
@@ -236,7 +224,6 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON settings TO anon, authenticated, service
 GRANT SELECT, INSERT, UPDATE, DELETE ON gallery_items TO anon, authenticated, service_role;
 GRANT SELECT, INSERT, UPDATE, DELETE ON reviews TO anon, authenticated, service_role;
 GRANT SELECT, INSERT, UPDATE, DELETE ON reservations TO anon, authenticated, service_role;
-GRANT SELECT, INSERT, UPDATE, DELETE ON coffee_brands TO anon, authenticated, service_role;
 
 
 -- ==========================================
@@ -338,12 +325,3 @@ CREATE POLICY "Allow select for authenticated users" ON reservations FOR SELECT 
 CREATE POLICY "Allow insert for everyone" ON reservations FOR INSERT TO public WITH CHECK (true);
 CREATE POLICY "Allow update for authenticated users" ON reservations FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
 CREATE POLICY "Allow delete for authenticated users" ON reservations FOR DELETE TO authenticated USING (true);
-
--- ------------------------------------------
--- M. Policies for "coffee_brands"
--- ------------------------------------------
-CREATE POLICY "Allow select for everyone" ON coffee_brands FOR SELECT TO public USING (true);
-CREATE POLICY "Allow insert for everyone" ON coffee_brands FOR INSERT TO public WITH CHECK (true);
-CREATE POLICY "Allow update for everyone" ON coffee_brands FOR UPDATE TO public USING (true) WITH CHECK (true);
-CREATE POLICY "Allow delete for everyone" ON coffee_brands FOR DELETE TO public USING (true);
-

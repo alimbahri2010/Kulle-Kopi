@@ -10,7 +10,7 @@ import {
   Search, Bell, User, LayoutDashboard, UtensilsCrossed, PackageOpen, 
   HelpCircle, LogOut, Check, X, ShieldAlert, Plus, Eye, Printer, 
   Tag, Compass, Sparkles, Filter, ToggleLeft, Edit, Trash2, CheckCircle2,
-  DollarSign, RefreshCcw, Landmark, Upload, Image, Info, MessageSquare, Star, Coffee, Copy
+  DollarSign, RefreshCcw, Landmark, Upload, Image, Info, MessageSquare, Star, Coffee
  } from 'lucide-react';
 import { MenuItem, Order, Customer, InventoryItem, Employee, Promotion, CafeSettings, OrderStatus, Category, GalleryItem, Review, Reservation, CoffeeBrand } from '../types';
 import { supabase } from '../supabaseClient';
@@ -37,7 +37,6 @@ interface AdminDashboardProps {
   reviews: Review[];
   reservations?: Reservation[];
   coffeeBrands?: CoffeeBrand[];
-  coffeeBrandsSyncError?: string | null;
   onUpdateMenu: (updated: MenuItem[]) => void;
   onUpdateOrders: (updated: Order[]) => void;
   onUpdateCustomers?: (updated: Customer[]) => void;
@@ -67,7 +66,6 @@ export default function AdminDashboard({
   reviews,
   reservations = [],
   coffeeBrands = [],
-  coffeeBrandsSyncError,
   onUpdateMenu,
   onUpdateOrders,
   onUpdateCustomers,
@@ -2602,72 +2600,6 @@ export default function AdminDashboard({
                   <Plus className="w-4.5 h-4.5" /> TAMBAH BRAND BARU
                 </button>
               </div>
-
-              {coffeeBrandsSyncError && (
-                <div className="p-5 rounded-2xl bg-amber-500/10 border-2 border-amber-500/30 text-amber-200 space-y-3">
-                  <div className="flex items-start gap-3">
-                    <ShieldAlert className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
-                    <div>
-                      <h4 className="font-bold text-sm text-amber-300">Tabel "coffee_brands" Belum Dibuat di Supabase</h4>
-                      <p className="text-xs text-slate-300 leading-relaxed mt-1">
-                        Perubahan pada brand kopi saat ini disimpan di penyimpanan lokal browser Anda, tetapi tidak dapat disinkronkan ke cloud karena tabel <code className="bg-slate-900/50 px-1 py-0.5 rounded text-amber-400 font-mono text-[11px]">coffee_brands</code> belum terbentuk di database Supabase Anda.
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="text-[10px] font-mono uppercase tracking-widest text-slate-400">Jalankan SQL ini di Dashboard Supabase SQL Editor:</span>
-                      <button
-                        onClick={() => {
-                          navigator.clipboard.writeText(`CREATE TABLE IF NOT EXISTS coffee_brands (
-  id TEXT PRIMARY KEY,
-  name TEXT NOT NULL,
-  origin TEXT,
-  roast_level TEXT,
-  description TEXT,
-  image TEXT,
-  is_active BOOLEAN NOT NULL DEFAULT true
-);
-
-ALTER TABLE coffee_brands ENABLE ROW LEVEL SECURITY;
-
-GRANT SELECT, INSERT, UPDATE, DELETE ON coffee_brands TO anon, authenticated, service_role;
-
-CREATE POLICY "Allow select for everyone" ON coffee_brands FOR SELECT TO public USING (true);
-CREATE POLICY "Allow insert for everyone" ON coffee_brands FOR INSERT TO public WITH CHECK (true);
-CREATE POLICY "Allow update for everyone" ON coffee_brands FOR UPDATE TO public USING (true) WITH CHECK (true);
-CREATE POLICY "Allow delete for everyone" ON coffee_brands FOR DELETE TO public USING (true);`);
-                          alert("SQL berhasil disalin ke clipboard!");
-                        }}
-                        className="text-[10px] bg-slate-800 hover:bg-slate-700 font-extrabold uppercase tracking-wider text-white px-3 py-1.5 rounded-lg flex items-center gap-1 transition-all"
-                      >
-                        <Copy className="w-3.5 h-3.5" /> SALIN SQL
-                      </button>
-                    </div>
-                    <pre className="text-[10px] font-mono text-slate-400 overflow-x-auto whitespace-pre leading-relaxed max-h-40 p-1">
-{`CREATE TABLE IF NOT EXISTS coffee_brands (
-  id TEXT PRIMARY KEY,
-  name TEXT NOT NULL,
-  origin TEXT,
-  roast_level TEXT,
-  description TEXT,
-  image TEXT,
-  is_active BOOLEAN NOT NULL DEFAULT true
-);
-
-ALTER TABLE coffee_brands ENABLE ROW LEVEL SECURITY;
-
-GRANT SELECT, INSERT, UPDATE, DELETE ON coffee_brands TO anon, authenticated, service_role;
-
-CREATE POLICY "Allow select for everyone" ON coffee_brands FOR SELECT TO public USING (true);
-CREATE POLICY "Allow insert for everyone" ON coffee_brands FOR INSERT TO public WITH CHECK (true);
-CREATE POLICY "Allow update for everyone" ON coffee_brands FOR UPDATE TO public USING (true) WITH CHECK (true);
-CREATE POLICY "Allow delete for everyone" ON coffee_brands FOR DELETE TO public USING (true);`}
-                    </pre>
-                  </div>
-                </div>
-              )}
 
               {/* Total Summary Stats for Brands */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

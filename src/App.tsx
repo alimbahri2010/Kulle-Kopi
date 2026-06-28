@@ -205,7 +205,6 @@ export default function App() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [coffeeBrands, setCoffeeBrands] = useState<CoffeeBrand[]>([]);
-  const [coffeeBrandsSyncError, setCoffeeBrandsSyncError] = useState<string | null>(null);
 
   // Load state from Supabase or fallback to Local Storage / INITIAL_DATA
   useEffect(() => {
@@ -315,22 +314,17 @@ export default function App() {
         }
         setCoffeeBrands(loadedBrands);
 
-        try {
-          const { data: dbBrands, error: errBrands } = await supabase
-            .from('coffee_brands')
-            .select('*');
-          if (errBrands) {
-            console.error('errBrands:', errBrands);
-            setCoffeeBrandsSyncError(errBrands.message || String(errBrands));
-          } else {
-            setCoffeeBrandsSyncError(null);
-            if (!isBrandsDirty && dbBrands && dbBrands.length > 0) {
+        if (!isBrandsDirty) {
+          try {
+            const { data: dbBrands, error: errBrands } = await supabase
+              .from('coffee_brands')
+              .select('*');
+            if (!errBrands && dbBrands && dbBrands.length > 0) {
               setCoffeeBrands(dbBrands.map(row => normalizeCoffeeBrand(row)));
             }
+          } catch (e) {
+            console.log('Tabel "coffee_brands" belum siap di Supabase, menggunakan data lokal.');
           }
-        } catch (e: any) {
-          console.log('Tabel "coffee_brands" belum siap di Supabase, menggunakan data lokal.');
-          setCoffeeBrandsSyncError(e?.message || String(e));
         }
 
         // --- 5. Load Other local-only states ---
@@ -523,13 +517,11 @@ export default function App() {
     }
     try {
       let syncError = false;
-      let errorMsg = '';
       if (deletedIds.length > 0) {
         const { error } = await supabase.from('coffee_brands').delete().in('id', deletedIds);
         if (error) {
           console.error('Supabase coffee brands delete error:', error);
           syncError = true;
-          errorMsg = error.message;
         }
       }
       if (updated.length > 0) {
@@ -537,20 +529,16 @@ export default function App() {
         if (error) {
           console.error('Supabase coffee brands upsert error:', error);
           syncError = true;
-          errorMsg = error.message;
         }
       }
 
       if (syncError) {
-        setCoffeeBrandsSyncError(errorMsg);
         try { localStorage.setItem('kulle_coffee_brands_dirty', 'true'); } catch (_) {}
       } else {
-        setCoffeeBrandsSyncError(null);
         try { localStorage.removeItem('kulle_coffee_brands_dirty'); } catch (_) {}
       }
-    } catch (e: any) {
+    } catch (e) {
       console.log('Sinkronisasi brand kopi ke Supabase ditunda (tabel belum terbentuk).');
-      setCoffeeBrandsSyncError(e?.message || String(e));
       try { localStorage.setItem('kulle_coffee_brands_dirty', 'true'); } catch (_) {}
     }
   };
@@ -787,7 +775,6 @@ export default function App() {
           reviews={reviews}
           reservations={reservations}
           coffeeBrands={coffeeBrands}
-          coffeeBrandsSyncError={coffeeBrandsSyncError}
           onUpdateMenu={handleUpdateMenu}
           onUpdateOrders={handleUpdateOrders}
           onUpdateCustomers={handleUpdateCustomers}
