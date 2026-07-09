@@ -277,7 +277,7 @@ export default function LandingPage({
       
       {/* 1. TOP UTILITY HEADER */}
       <div className={`text-center py-2 px-4 transition-colors text-xs tracking-widest font-mono uppercase ${isDarkMode ? 'bg-[#0a152d] text-[#0F52BA]' : 'bg-slate-100 text-[#0F52BA]'}`}>
-        ✨ #SahabatKulle • Pesan dari Meja Anda Secara Digital <span className="hidden sm:inline">• Buka Setiap Hari 07:00 - 23:00</span>
+        ✨ #SahabatKulle • Selamat Datang di Kulle Kopi <span className="hidden sm:inline">• Buka Setiap Hari 07:00 - 23:00</span>
       </div>
 
       {/* 2. STICKY GLASSMORPHIC NAVBAR */}
