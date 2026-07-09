@@ -21,6 +21,12 @@ import {
 import LandingPage from './components/LandingPage';
 import AdminDashboard from './components/AdminDashboard';
 import { supabase } from './supabaseClient';
+import { 
+  getStoragePathFromUrl, 
+  resolveSignedUrlsForList, 
+  resolveSettingsSignedUrls, 
+  deleteFileFromStorage 
+} from './storageUtils';
 
 // Helper functions to map camelCase <-> snake_case <-> lowercase for Supabase compatibility
 function toSnakeCase(str: string): string {
@@ -231,7 +237,9 @@ export default function App() {
               .select('*')
               .maybeSingle();
             if (!errSettings && dbSettings) {
-              setSettings(normalizeSettings(dbSettings));
+              const normalized = normalizeSettings(dbSettings);
+              const resolved = await resolveSettingsSignedUrls(normalized);
+              setSettings(resolved);
             }
           } catch (e) {
             console.log('Tabel "settings" belum siap di Supabase, menggunakan data lokal.');
@@ -254,7 +262,8 @@ export default function App() {
               .select('*')
               .order('date', { ascending: false });
             if (!errReviews && dbReviews && dbReviews.length > 0) {
-              setReviews(dbReviews);
+              const resolved = await resolveSignedUrlsForList(dbReviews, 'avatar');
+              setReviews(resolved);
             }
           } catch (e) {
             console.log('Tabel "reviews" belum siap di Supabase, menggunakan data lokal.');
@@ -276,7 +285,9 @@ export default function App() {
               .from('menu_items')
               .select('*');
             if (!errMenu && dbMenu && dbMenu.length > 0) {
-              setMenuItems(dbMenu.map(row => normalizeMenuItem(row)));
+              const normalized = dbMenu.map(row => normalizeMenuItem(row));
+              const resolved = await resolveSignedUrlsForList(normalized, 'image');
+              setMenuItems(resolved);
             }
           } catch (e) {
             console.log('Tabel "menu_items" belum siap di Supabase, menggunakan data lokal.');
@@ -298,7 +309,8 @@ export default function App() {
               .from('gallery_items')
               .select('*');
             if (!errGallery && dbGallery && dbGallery.length > 0) {
-              setGalleryPhotos(dbGallery);
+              const resolved = await resolveSignedUrlsForList(dbGallery, 'url');
+              setGalleryPhotos(resolved);
             }
           } catch (e) {
             console.log('Tabel "gallery_items" belum siap di Supabase, menggunakan data lokal.');
@@ -320,7 +332,9 @@ export default function App() {
               .from('coffee_brands')
               .select('*');
             if (!errBrands && dbBrands && dbBrands.length > 0) {
-              setCoffeeBrands(dbBrands.map(row => normalizeCoffeeBrand(row)));
+              const normalized = dbBrands.map(row => normalizeCoffeeBrand(row));
+              const resolved = await resolveSignedUrlsForList(normalized, 'image');
+              setCoffeeBrands(resolved);
             }
           } catch (e) {
             console.log('Tabel "coffee_brands" belum siap di Supabase, menggunakan data lokal.');
@@ -389,6 +403,12 @@ export default function App() {
     try {
       let syncError = false;
       if (deletedIds.length > 0) {
+        const deletedItems = menuItems.filter(item => deletedIds.includes(item.id));
+        for (const item of deletedItems) {
+          if (item.image) {
+            await deleteFileFromStorage(getStoragePathFromUrl(item.image));
+          }
+        }
         const { error } = await supabase.from('menu_items').delete().in('id', deletedIds);
         if (error) {
           console.error('Supabase delete error:', error);
@@ -396,7 +416,11 @@ export default function App() {
         }
       }
       if (updated.length > 0) {
-        const { error } = await robustUpsert('menu_items', updated);
+        const dbUpdated = updated.map(item => ({
+          ...item,
+          image: getStoragePathFromUrl(item.image)
+        }));
+        const { error } = await robustUpsert('menu_items', dbUpdated);
         if (error) {
           console.error('Supabase upsert error:', error);
           syncError = true;
@@ -458,7 +482,26 @@ export default function App() {
       console.warn('Gagal menyimpan pengaturan ke LocalStorage karena quota penuh.', e);
     }
     try {
-      const { error } = await robustUpsert('settings', { id: 'current_settings', ...updated });
+      // Delete any files that were replaced/removed in Settings
+      const keys: (keyof CafeSettings)[] = ['faviconUrl', 'heroImageUrl1', 'heroImageUrl2', 'heroImageUrl3', 'heroImageUrl4'];
+      for (const key of keys) {
+        const oldVal = settings[key];
+        const newVal = updated[key];
+        if (oldVal && oldVal !== newVal && typeof oldVal === 'string' && !oldVal.startsWith('http') && !oldVal.startsWith('data:')) {
+          await deleteFileFromStorage(oldVal);
+        }
+      }
+
+      const dbUpdated = {
+        ...updated,
+        faviconUrl: getStoragePathFromUrl(updated.faviconUrl || ''),
+        heroImageUrl1: getStoragePathFromUrl(updated.heroImageUrl1 || ''),
+        heroImageUrl2: getStoragePathFromUrl(updated.heroImageUrl2 || ''),
+        heroImageUrl3: getStoragePathFromUrl(updated.heroImageUrl3 || ''),
+        heroImageUrl4: getStoragePathFromUrl(updated.heroImageUrl4 || ''),
+      };
+
+      const { error } = await robustUpsert('settings', { id: 'current_settings', ...dbUpdated });
       if (error) {
         console.error('Supabase settings upsert error:', error);
         try { localStorage.setItem('kulle_settings_dirty', 'true'); } catch (_) {}
@@ -482,6 +525,12 @@ export default function App() {
     try {
       let syncError = false;
       if (deletedIds.length > 0) {
+        const deletedItems = galleryPhotos.filter(item => deletedIds.includes(item.id));
+        for (const item of deletedItems) {
+          if (item.url) {
+            await deleteFileFromStorage(getStoragePathFromUrl(item.url));
+          }
+        }
         const { error } = await supabase.from('gallery_items').delete().in('id', deletedIds);
         if (error) {
           console.error('Supabase gallery delete error:', error);
@@ -489,7 +538,11 @@ export default function App() {
         }
       }
       if (updated.length > 0) {
-        const { error } = await supabase.from('gallery_items').upsert(updated);
+        const dbUpdated = updated.map(item => ({
+          ...item,
+          url: getStoragePathFromUrl(item.url)
+        }));
+        const { error } = await supabase.from('gallery_items').upsert(dbUpdated);
         if (error) {
           console.error('Supabase gallery upsert error:', error);
           syncError = true;
@@ -518,6 +571,12 @@ export default function App() {
     try {
       let syncError = false;
       if (deletedIds.length > 0) {
+        const deletedItems = coffeeBrands.filter(brand => deletedIds.includes(brand.id));
+        for (const item of deletedItems) {
+          if (item.image) {
+            await deleteFileFromStorage(getStoragePathFromUrl(item.image));
+          }
+        }
         const { error } = await supabase.from('coffee_brands').delete().in('id', deletedIds);
         if (error) {
           console.error('Supabase coffee brands delete error:', error);
@@ -525,7 +584,11 @@ export default function App() {
         }
       }
       if (updated.length > 0) {
-        const { error } = await robustUpsert('coffee_brands', updated);
+        const dbUpdated = updated.map(brand => ({
+          ...brand,
+          image: getStoragePathFromUrl(brand.image)
+        }));
+        const { error } = await robustUpsert('coffee_brands', dbUpdated);
         if (error) {
           console.error('Supabase coffee brands upsert error:', error);
           syncError = true;
@@ -554,6 +617,12 @@ export default function App() {
     try {
       let syncError = false;
       if (deletedIds.length > 0) {
+        const deletedItems = reviews.filter(item => deletedIds.includes(item.id));
+        for (const item of deletedItems) {
+          if (item.avatar) {
+            await deleteFileFromStorage(getStoragePathFromUrl(item.avatar));
+          }
+        }
         const { error } = await supabase.from('reviews').delete().in('id', deletedIds);
         if (error) {
           console.error('Supabase reviews delete error:', error);
@@ -561,7 +630,11 @@ export default function App() {
         }
       }
       if (updated.length > 0) {
-        const { error } = await supabase.from('reviews').upsert(updated);
+        const dbUpdated = updated.map(item => ({
+          ...item,
+          avatar: getStoragePathFromUrl(item.avatar)
+        }));
+        const { error } = await supabase.from('reviews').upsert(dbUpdated);
         if (error) {
           console.error('Supabase reviews upsert error:', error);
           syncError = true;

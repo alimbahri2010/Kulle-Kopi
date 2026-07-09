@@ -14,6 +14,7 @@ import {
  } from 'lucide-react';
 import { MenuItem, Order, Customer, InventoryItem, Employee, Promotion, CafeSettings, OrderStatus, Category, GalleryItem, Review, Reservation, CoffeeBrand } from '../types';
 import { supabase } from '../supabaseClient';
+import { uploadFileToStorage } from '../storageUtils';
 // @ts-ignore
 import logoImg from '../assets/images/regenerated_image_1780051135628.png';
 // @ts-ignore
@@ -483,19 +484,19 @@ export default function AdminDashboard({
     setMenuFormBestSeller(false);
   };
 
-  const handleImageUploadChange = (file: File) => {
+  const handleImageUploadChange = async (file: File) => {
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) {
       alert("Ukuran gambar tidak boleh melebihi 5MB.");
       return;
     }
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      if (typeof reader.result === 'string') {
-        setMenuFormImage(reader.result);
-      }
-    };
-    reader.readAsDataURL(file);
+    try {
+      const itemId = editingMenuItem ? editingMenuItem.id : 'm_' + Date.now();
+      const { path, signedUrl } = await uploadFileToStorage(file, 'menu_items', itemId);
+      setMenuFormImage(signedUrl);
+    } catch (err: any) {
+      alert("Gagal mengunggah gambar menu: " + err.message);
+    }
   };
 
   const handleImageDragOver = (e: React.DragEvent) => {
@@ -702,19 +703,19 @@ export default function AdminDashboard({
     });
   };
 
-  const handleGalleryImageUploadChange = (file: File) => {
+  const handleGalleryImageUploadChange = async (file: File) => {
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) {
       alert("Ukuran gambar tidak boleh melebihi 5MB.");
       return;
     }
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      if (typeof reader.result === 'string') {
-        setGalleryFormImage(reader.result);
-      }
-    };
-    reader.readAsDataURL(file);
+    try {
+      const itemId = editingGalleryItem ? editingGalleryItem.id : 'g_' + Date.now();
+      const { path, signedUrl } = await uploadFileToStorage(file, 'gallery_items', itemId);
+      setGalleryFormImage(signedUrl);
+    } catch (err: any) {
+      alert("Gagal mengunggah gambar galeri: " + err.message);
+    }
   };
 
   // --- REVIEWS MODIFICATION LOGIC ---
@@ -780,19 +781,19 @@ export default function AdminDashboard({
     });
   };
 
-  const handleReviewAvatarUploadChange = (file: File) => {
+  const handleReviewAvatarUploadChange = async (file: File) => {
     if (!file) return;
     if (file.size > 2 * 1024 * 1024) {
       alert("Ukuran gambar avatar tidak boleh melebihi 2MB.");
       return;
     }
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      if (typeof reader.result === 'string') {
-        setReviewFormAvatar(reader.result);
-      }
-    };
-    reader.readAsDataURL(file);
+    try {
+      const itemId = editingReview ? editingReview.id : 'rev_' + Date.now();
+      const { path, signedUrl } = await uploadFileToStorage(file, 'reviews', itemId);
+      setReviewFormAvatar(signedUrl);
+    } catch (err: any) {
+      alert("Gagal mengunggah gambar avatar: " + err.message);
+    }
   };
 
   const handleOpenBrandForm = (brand: CoffeeBrand | null = null) => {
@@ -873,19 +874,19 @@ export default function AdminDashboard({
     });
   };
 
-  const handleBrandImageUploadChange = (file: File) => {
+  const handleBrandImageUploadChange = async (file: File) => {
     if (!file) return;
     if (file.size > 2 * 1024 * 1024) {
       alert("Ukuran gambar tidak boleh melebihi 2MB.");
       return;
     }
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      if (typeof reader.result === 'string') {
-        setBrandFormImage(reader.result);
-      }
-    };
-    reader.readAsDataURL(file);
+    try {
+      const itemId = editingBrand ? editingBrand.id : 'brand_' + Date.now();
+      const { path, signedUrl } = await uploadFileToStorage(file, 'coffee_brands', itemId);
+      setBrandFormImage(signedUrl);
+    } catch (err: any) {
+      alert("Gagal mengunggah gambar brand kopi: " + err.message);
+    }
   };
 
   const handleOpenAddCustomer = () => {
@@ -954,38 +955,37 @@ export default function AdminDashboard({
     setCustFormOpen(false);
   };
 
-  const handleCustAvatarUploadChange = (file: File) => {
+  const handleCustAvatarUploadChange = async (file: File) => {
     if (!file) return;
     if (file.size > 2 * 1024 * 1024) {
       alert("Ukuran gambar avatar tidak boleh melebihi 2MB.");
       return;
     }
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      if (typeof reader.result === 'string') {
-        setCustFormAvatar(reader.result);
-      }
-    };
-    reader.readAsDataURL(file);
+    try {
+      const itemId = editingCustomer ? editingCustomer.id : 'cust_' + Date.now();
+      const { path, signedUrl } = await uploadFileToStorage(file, 'customers', itemId);
+      setCustFormAvatar(signedUrl);
+    } catch (err: any) {
+      alert("Gagal mengunggah avatar pelanggan: " + err.message);
+    }
   };
 
 
-  const handleHeroUploadChange = (file: File, slideIdx: number) => {
+  const handleHeroUploadChange = async (file: File, slideIdx: number) => {
     if (!file) return;
     if (file.size > 4 * 1024 * 1024) {
       alert("Ukuran gambar hero tidak boleh melebihi 4MB.");
       return;
     }
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      if (typeof reader.result === 'string') {
-        if (slideIdx === 1) setSettingsHero1(reader.result);
-        if (slideIdx === 2) setSettingsHero2(reader.result);
-        if (slideIdx === 3) setSettingsHero3(reader.result);
-        if (slideIdx === 4) setSettingsHero4(reader.result);
-      }
-    };
-    reader.readAsDataURL(file);
+    try {
+      const { path, signedUrl } = await uploadFileToStorage(file, 'settings', `hero_slide_${slideIdx}`);
+      if (slideIdx === 1) setSettingsHero1(signedUrl);
+      if (slideIdx === 2) setSettingsHero2(signedUrl);
+      if (slideIdx === 3) setSettingsHero3(signedUrl);
+      if (slideIdx === 4) setSettingsHero4(signedUrl);
+    } catch (err: any) {
+      alert("Gagal mengunggah gambar hero banner: " + err.message);
+    }
   };
 
   // --- METRIC STATISTICS CALCULATORS ---
@@ -3032,20 +3032,19 @@ export default function AdminDashboard({
                             type="file"
                             accept="image/*"
                             className="hidden"
-                            onChange={(e) => {
+                            onChange={async (e) => {
                               const file = e.target.files?.[0];
                               if (!file) return;
                               if (file.size > 1 * 1024 * 1024) {
                                 alert("Ukuran gambar ikon (favicon) tidak boleh melebihi 1MB.");
                                 return;
                               }
-                              const reader = new FileReader();
-                              reader.onloadend = () => {
-                                if (typeof reader.result === 'string') {
-                                  setSettingsFavicon(reader.result);
-                                }
-                              };
-                              reader.readAsDataURL(file);
+                              try {
+                                const { path, signedUrl } = await uploadFileToStorage(file, 'settings', 'favicon');
+                                setSettingsFavicon(signedUrl);
+                              } catch (err: any) {
+                                alert("Gagal mengunggah ikon favicon: " + err.message);
+                              }
                             }}
                           />
                         </label>
@@ -3095,11 +3094,7 @@ export default function AdminDashboard({
                               onChange={(e) => {
                                 const file = e.target.files?.[0];
                                 if (!file) return;
-                                const reader = new FileReader();
-                                reader.onloadend = () => {
-                                  if (typeof reader.result === 'string') setSettingsHero1(reader.result);
-                                };
-                                reader.readAsDataURL(file);
+                                handleHeroUploadChange(file, 1);
                               }}
                             />
                           </label>
@@ -3134,11 +3129,7 @@ export default function AdminDashboard({
                               onChange={(e) => {
                                 const file = e.target.files?.[0];
                                 if (!file) return;
-                                const reader = new FileReader();
-                                reader.onloadend = () => {
-                                  if (typeof reader.result === 'string') setSettingsHero2(reader.result);
-                                };
-                                reader.readAsDataURL(file);
+                                handleHeroUploadChange(file, 2);
                               }}
                             />
                           </label>
@@ -3173,11 +3164,7 @@ export default function AdminDashboard({
                               onChange={(e) => {
                                 const file = e.target.files?.[0];
                                 if (!file) return;
-                                const reader = new FileReader();
-                                reader.onloadend = () => {
-                                  if (typeof reader.result === 'string') setSettingsHero3(reader.result);
-                                };
-                                reader.readAsDataURL(file);
+                                handleHeroUploadChange(file, 3);
                               }}
                             />
                           </label>
@@ -3212,11 +3199,7 @@ export default function AdminDashboard({
                               onChange={(e) => {
                                 const file = e.target.files?.[0];
                                 if (!file) return;
-                                const reader = new FileReader();
-                                reader.onloadend = () => {
-                                  if (typeof reader.result === 'string') setSettingsHero4(reader.result);
-                                };
-                                reader.readAsDataURL(file);
+                                handleHeroUploadChange(file, 4);
                               }}
                             />
                           </label>
