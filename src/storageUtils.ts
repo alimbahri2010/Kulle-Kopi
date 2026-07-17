@@ -26,6 +26,7 @@ export function getStoragePathFromUrl(url: string): string {
 
 /**
  * Generates a signed URL for a given relative storage path in the 'Assets' bucket.
+ * If the user is not authenticated, falls back to the public URL for compatibility with public buckets.
  */
 export async function getSignedUrl(path: string): Promise<string> {
   if (!path) return '';
@@ -33,18 +34,27 @@ export async function getSignedUrl(path: string): Promise<string> {
     return path;
   }
   try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      // If user is not authenticated, get the public URL (highly efficient and works for public buckets)
+      const { data } = supabase.storage.from('Assets').getPublicUrl(path);
+      return data?.publicUrl || path;
+    }
+
     const { data, error } = await supabase.storage
       .from('Assets')
       .createSignedUrl(path, 31536000); // 1 year expiry
       
     if (error) {
-      console.error('Error generating signed URL for:', path, error);
-      return path;
+      console.warn('Error generating signed URL, falling back to public URL:', error);
+      const { data: pubData } = supabase.storage.from('Assets').getPublicUrl(path);
+      return pubData?.publicUrl || path;
     }
     return data?.signedUrl || path;
   } catch (err) {
-    console.error('Exception generating signed URL:', err);
-    return path;
+    console.error('Exception generating signed URL, falling back to public URL:', err);
+    const { data } = supabase.storage.from('Assets').getPublicUrl(path);
+    return data?.publicUrl || path;
   }
 }
 
@@ -121,6 +131,7 @@ export async function deleteFileFromStorage(path: string): Promise<void> {
 
 /**
  * Batch resolves relative image paths into signed URLs for an array of items.
+ * If user is not authenticated or retrieval fails, falls back to public URLs.
  */
 export async function resolveSignedUrlsForList<T>(
   items: T[],
@@ -139,18 +150,42 @@ export async function resolveSignedUrlsForList<T>(
   
   if (pathsToResolve.length === 0) return items;
   
+  const newItems = [...items];
   try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      // User not authenticated, resolve with public URLs immediately (no API call needed)
+      pathsToResolve.forEach((p) => {
+        const { data } = supabase.storage.from('Assets').getPublicUrl(p.path);
+        if (data?.publicUrl) {
+          newItems[p.index] = {
+            ...newItems[p.index],
+            [imageKey]: data.publicUrl
+          };
+        }
+      });
+      return newItems;
+    }
+
     const paths = pathsToResolve.map(p => p.path);
     const { data, error } = await supabase.storage
       .from('Assets')
       .createSignedUrls(paths, 31536000); // 1 year expiry
       
     if (error) {
-      console.error('Error batch resolving signed URLs:', error);
-      return items;
+      console.warn('Error batch resolving signed URLs, falling back to public URLs:', error);
+      pathsToResolve.forEach((p) => {
+        const { data: pubData } = supabase.storage.from('Assets').getPublicUrl(p.path);
+        if (pubData?.publicUrl) {
+          newItems[p.index] = {
+            ...newItems[p.index],
+            [imageKey]: pubData.publicUrl
+          };
+        }
+      });
+      return newItems;
     }
     
-    const newItems = [...items];
     pathsToResolve.forEach((p, idx) => {
       const signedUrl = data?.[idx]?.signedUrl;
       if (signedUrl) {
@@ -158,12 +193,29 @@ export async function resolveSignedUrlsForList<T>(
           ...newItems[p.index],
           [imageKey]: signedUrl
         };
+      } else {
+        const { data: pubData } = supabase.storage.from('Assets').getPublicUrl(p.path);
+        if (pubData?.publicUrl) {
+          newItems[p.index] = {
+            ...newItems[p.index],
+            [imageKey]: pubData.publicUrl
+          };
+        }
       }
     });
     return newItems;
   } catch (err) {
-    console.error('Exception batch resolving signed URLs:', err);
-    return items;
+    console.error('Exception batch resolving signed URLs, falling back to public URLs:', err);
+    pathsToResolve.forEach((p) => {
+      const { data } = supabase.storage.from('Assets').getPublicUrl(p.path);
+      if (data?.publicUrl) {
+        newItems[p.index] = {
+          ...newItems[p.index],
+          [imageKey]: data.publicUrl
+        };
+      }
+    });
+    return newItems;
   }
 }
 
